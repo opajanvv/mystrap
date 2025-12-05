@@ -1,3 +1,4 @@
 # Common packages for all workstations
 stow
 cronie
+lynx
