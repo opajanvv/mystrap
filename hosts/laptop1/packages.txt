@@ -1,0 +1,4 @@
+# Additional packages for laptop1
+# Add host-specific packages here
+tlp
+acpi
