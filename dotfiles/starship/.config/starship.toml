@@ -1,7 +1,0 @@
-# Starship prompt configuration
-# TODO: Add your Starship configuration here
-
-[character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[➜](bold red)"
-
