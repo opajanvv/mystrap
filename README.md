@@ -62,18 +62,21 @@ The generic examples in this repository are intentionally minimal - they show th
 janstrap/
 ├── install_all.sh          # Main entry point
 ├── packages.txt            # Common packages for all workstations
+├── uninstall.txt           # Packages to uninstall from all workstations
 ├── stow.txt                # Common dotfiles to stow
 ├── overrides.conf          # Common Hyprland overrides (optional)
 ├── install/                # Post-install scripts for packages (optional)
 │   └── cronie.sh           # Example: Enable cronie service after install
 ├── scripts/
 │   ├── helpers.sh          # Utility functions
+│   ├── uninstall_packages.sh # Package uninstallation (common + host-specific)
 │   ├── install_packages.sh # Package installation (common + host-specific)
 │   ├── install_dotfiles.sh # Dotfile stowing
 │   └── install_overrides.sh # Override application
 ├── hosts/
 │   ├── laptop1/            # Host-specific configuration
 │   │   ├── packages.txt    # Additional packages for laptop1
+│   │   ├── uninstall.txt   # Additional packages to uninstall (optional)
 │   │   ├── stow.txt        # Additional dotfiles (optional)
 │   │   ├── overrides.conf  # Host-specific Hyprland overrides
 │   │   ├── install/        # Host-specific post-install scripts (optional)
@@ -82,6 +85,7 @@ janstrap/
 │   │       └── waybar/     # Override specific files from common waybar package
 │   └── laptop2/            # Another workstation
 │       ├── packages.txt
+│       ├── uninstall.txt   # (optional)
 │       ├── stow.txt
 │       ├── overrides.conf
 │       ├── install/        # Host-specific post-install scripts (optional)
@@ -137,6 +141,7 @@ cd janstrap
 ```
 
 The installer will auto-detect your hostname and:
+- Uninstall unwanted packages (from uninstall.txt, if any)
 - Install common packages
 - Install host-specific packages (if any)
 - Stow common dotfiles
@@ -250,6 +255,27 @@ All packages are installed via `yay`, which handles both official repository and
 - `hosts/<hostname>/packages.txt`: Additional packages for specific workstations
 
 Packages are deduplicated automatically, so overlaps between common and host-specific lists are fine.
+
+### uninstall.txt
+
+List of packages to uninstall (remove), one per line. Comments start with `#`.
+These packages will be removed if they are currently installed, using `yay -Rns` (removes package with unused dependencies).
+
+- Root `uninstall.txt`: Packages to remove from all workstations
+- `hosts/<hostname>/uninstall.txt`: Additional packages to remove from specific workstations (optional)
+
+**When to use uninstall.txt:**
+- Replacing one package with another (e.g., `omarchy-chromium` → `google-chrome`)
+- Removing pre-installed packages you don't want
+- Cleaning up packages that are no longer needed
+
+**Example:**
+```
+# Replace Chromium with Chrome
+omarchy-chromium
+```
+
+The uninstall step runs **before** package installation, so you can safely replace packages in one operation. Packages are deduplicated automatically, and only installed packages will be removed (idempotent).
 
 ### stow.txt
 
