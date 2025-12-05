@@ -79,3 +79,30 @@ install_packages "$all_packages"
 
 log "Packages installed successfully"
 
+# Run post-install scripts for each package
+log "Checking for post-install scripts..."
+
+# Function to run install script if it exists
+run_install_script() {
+    script_path="$1"
+    package_name="$2"
+
+    if [ -f "$script_path" ] && [ -x "$script_path" ]; then
+        log "Running post-install script: $script_path"
+        "$script_path" --host "$HOST" || warn "Post-install script failed: $script_path"
+    fi
+}
+
+# Process each package for post-install scripts
+for package in $all_packages; do
+    # Check for common install script
+    common_script="$REPO_ROOT/install/${package}.sh"
+    run_install_script "$common_script" "$package"
+
+    # Check for host-specific install script
+    host_script="$REPO_ROOT/hosts/$HOST/install/${package}.sh"
+    run_install_script "$host_script" "$package"
+done
+
+log "Post-install scripts completed"
+
