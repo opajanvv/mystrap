@@ -1,0 +1,4 @@
+# Additional packages for laptop2
+# Add host-specific packages here
+nvidia
+xmonad

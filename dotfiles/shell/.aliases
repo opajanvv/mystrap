@@ -1,0 +1,14 @@
+# Shell aliases
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# Modern replacements
+alias ls='eza'
+alias cat='bat'
+
+# Git shortcuts
+alias g='git'
+alias gs='git status'
+alias gd='git diff'
