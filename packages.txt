@@ -2,3 +2,4 @@
 stow
 cronie
 lynx
+google-chrome

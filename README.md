@@ -1,4 +1,10 @@
-# JanStrap
+# MyStrap
+
+This is a copy of the JanStrap Github template.
+This is the customized version for my own homelab, hence *My*Strap.
+All JanStrap example source code is removed, and I am now building my own version using this framework.
+
+#JanStrap
 
 An idempotent bootstrap and configuration management system for Omarchy workstations.
 

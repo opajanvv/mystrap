@@ -61,17 +61,34 @@ install_packages() {
     # Install packages using yay (handles both official repos and AUR)
     # Usage: install_packages <packages>
     packages="$1"
-    
+
     if [ -z "$packages" ]; then
         return 0
     fi
-    
+
     if ! has_cmd yay; then
         die "yay not found. This script requires yay to be installed."
     fi
-    
+
     log "Installing packages with yay: $packages"
     yay -S --needed --noconfirm $packages || die "Failed to install packages"
+}
+
+uninstall_packages() {
+    # Uninstall packages using yay with their unused dependencies
+    # Usage: uninstall_packages <packages>
+    packages="$1"
+
+    if [ -z "$packages" ]; then
+        return 0
+    fi
+
+    if ! has_cmd yay; then
+        die "yay not found. This script requires yay to be installed."
+    fi
+
+    log "Uninstalling packages with yay: $packages"
+    yay -Rns --noconfirm $packages || die "Failed to uninstall packages"
 }
 
 

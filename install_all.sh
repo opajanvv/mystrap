@@ -71,16 +71,20 @@ fi
 # Run installation scripts in order
 log "Starting installation process..."
 
-# 1. Install packages (common + host-specific)
-log "Step 1/3: Installing packages..."
+# 1. Uninstall packages (common + host-specific)
+log "Step 1/4: Uninstalling packages..."
+"$SCRIPTS_DIR/uninstall_packages.sh" --host "$HOST" || die "Packages uninstallation failed"
+
+# 2. Install packages (common + host-specific)
+log "Step 2/4: Installing packages..."
 "$SCRIPTS_DIR/install_packages.sh" --host "$HOST" || die "Packages installation failed"
 
-# 2. Install dotfiles
-log "Step 2/3: Installing dotfiles..."
+# 3. Install dotfiles
+log "Step 3/4: Installing dotfiles..."
 "$SCRIPTS_DIR/install_dotfiles.sh" --host "$HOST" || die "Dotfiles installation failed"
 
-# 3. Install overrides
-log "Step 3/3: Installing overrides..."
+# 4. Install overrides
+log "Step 4/4: Installing overrides..."
 "$SCRIPTS_DIR/install_overrides.sh" --host "$HOST" || die "Overrides installation failed"
 
 log "Installation complete!"
