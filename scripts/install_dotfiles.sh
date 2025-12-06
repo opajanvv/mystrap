@@ -100,9 +100,30 @@ stow_from_file() {
         # Merge common and host-specific dotfiles into temp directory
         merge_package "$package"
 
-        # Stow from the merged temp directory
-        # Using --override to force repo as source of truth
-        stow -d "$TEMP_DOTFILES_DIR" -t "$HOME" --restow --override='.*' "$package" || warn "Failed to stow $package"
+        # Try to stow - capture output to detect conflicts
+        stow_output=$(stow -d "$TEMP_DOTFILES_DIR" -t "$HOME" --restow "$package" 2>&1) || stow_failed=true
+
+        # If stow failed, check for conflicts and handle them
+        if [ "${stow_failed:-false}" = "true" ]; then
+            # Parse conflict errors and remove non-symlink files
+            echo "$stow_output" | grep "existing target" | while IFS= read -r line; do
+                # Extract the target path (format: "...existing target PATH since...")
+                target=$(echo "$line" | sed -n 's/.*existing target \(.*\) since.*/\1/p')
+                if [ -n "$target" ]; then
+                    target_path="$HOME/$target"
+                    # Only remove if it's a regular file (not a symlink or directory)
+                    if [ -f "$target_path" ] && [ ! -L "$target_path" ]; then
+                        log "  Removing conflicting file: $target"
+                        rm "$target_path"
+                    fi
+                fi
+            done
+
+            # Retry stow after removing conflicts
+            log "  Retrying stow for $package..."
+            stow -d "$TEMP_DOTFILES_DIR" -t "$HOME" --restow "$package" || warn "Failed to stow $package"
+            unset stow_failed
+        fi
     done < "$stow_file"
 }
 
