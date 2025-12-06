@@ -1,1 +1,2 @@
 # Common dotfiles to stow
+waybar
