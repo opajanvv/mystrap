@@ -244,17 +244,17 @@ tail -f ~/.janstrap-auto-update.log
 
 **Tip:** For critical changes, test on a single machine first, then push to let other machines auto-update.
 
-### Sudo and Post-Install Scripts
+### Sudo and Automated Updates
 
-Post-install scripts that enable systemd services require `sudo` access. When running manually, you'll be prompted for your password. **However, automated/scheduled runs cannot prompt for passwords.**
+Both package installation and post-install scripts require `sudo` access. When running manually, you'll be prompted for your password. **However, automated/scheduled runs cannot prompt for passwords.**
 
-**Behavior:**
-- **Manual runs**: Prompts for password → services enabled
-- **Automated runs**: Skips service enablement → logs warning
+**Behavior without passwordless sudo:**
+- **Manual runs**: Prompts for password → full installation works
+- **Automated runs**: Fails at package installation (cannot prompt for password)
 
 **Solution for full automation** (optional):
 
-If you want post-install scripts to enable services during automated runs, configure passwordless sudo for specific systemctl commands:
+If you want automated updates to work completely unattended, configure passwordless sudo for package management and service commands:
 
 1. Create a sudoers file:
 ```bash
@@ -263,16 +263,16 @@ sudo visudo -f /etc/sudoers.d/janstrap
 
 2. Add this content (replace `yourusername` with your actual username):
 ```
-yourusername ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable *, /usr/bin/systemctl start *, /usr/bin/systemctl mask *
+yourusername ALL=(ALL) NOPASSWD: /usr/bin/yay, /usr/bin/pacman, /usr/bin/systemctl enable *, /usr/bin/systemctl start *, /usr/bin/systemctl mask *
 ```
 
 3. Save and exit (Ctrl+X, then Y, then Enter in nano)
 
 **Important notes:**
 - This is a **one-time manual setup** per machine
-- Only needed if you want automated service enablement
-- Services only need to be enabled **once** - subsequent updates don't re-enable them
-- Most users can skip this and just enable services during the first manual run
+- Enables full unattended automation (package installation + service enablement)
+- **Security consideration**: This allows automated package installation without password
+- If you're uncomfortable with this, run updates manually instead
 
 ## Configuration Files
 
