@@ -101,7 +101,8 @@ stow_from_file() {
         merge_package "$package"
 
         # Stow from the merged temp directory
-        stow -d "$TEMP_DOTFILES_DIR" -t "$HOME" --restow "$package" || warn "Failed to stow $package"
+        # Using --override to force repo as source of truth
+        stow -d "$TEMP_DOTFILES_DIR" -t "$HOME" --restow --override='.*' "$package" || warn "Failed to stow $package"
     done < "$stow_file"
 }
 
