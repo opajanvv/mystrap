@@ -5,3 +5,6 @@ lynx
 google-chrome
 croc
 mc
+cmake
+meson
+cpio
