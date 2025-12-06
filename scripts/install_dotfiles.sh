@@ -65,4 +65,51 @@ while IFS= read -r package || [ -n "$package" ]; do
     fi
 done < "$STOW_FILE"
 
-log "Dotfiles installed successfully"
+log "Common dotfiles installed successfully"
+
+# Install host-specific dotfiles if they exist
+HOST=$(get_hostname)
+HOST_DOTFILES_DIR="$REPO_ROOT/hosts/$HOST/dotfiles"
+
+if [ -d "$HOST_DOTFILES_DIR" ]; then
+    log "Installing host-specific dotfiles for $HOST..."
+
+    # Find all packages in host dotfiles directory
+    for package_dir in "$HOST_DOTFILES_DIR"/*; do
+        if [ ! -d "$package_dir" ]; then
+            continue
+        fi
+
+        package=$(basename "$package_dir")
+        log "Stowing host-specific $package..."
+
+        # Try to stow - capture output to detect conflicts
+        stow_output=$(stow -d "$HOST_DOTFILES_DIR" -t "$HOME" --restow "$package" 2>&1) || stow_failed=true
+
+        # If stow failed, check for conflicts and handle them
+        if [ "${stow_failed:-false}" = "true" ]; then
+            # Parse conflict errors and remove non-symlink files
+            echo "$stow_output" | grep "existing target" | while IFS= read -r line; do
+                # Extract the target path (format: "...existing target PATH since...")
+                target=$(echo "$line" | sed -n 's/.*existing target \(.*\) since.*/\1/p')
+                if [ -n "$target" ]; then
+                    target_path="$HOME/$target"
+                    # Only remove if it's a regular file (not a symlink or directory)
+                    if [ -f "$target_path" ] && [ ! -L "$target_path" ]; then
+                        log "  Removing conflicting file: $target"
+                        rm "$target_path"
+                    fi
+                fi
+            done
+
+            # Retry stow after removing conflicts
+            log "  Retrying stow for $package..."
+            stow -d "$HOST_DOTFILES_DIR" -t "$HOME" --restow "$package" || warn "Failed to stow $package"
+            unset stow_failed
+        fi
+    done
+
+    log "Host-specific dotfiles installed successfully"
+else
+    log "No host-specific dotfiles found for $HOST (skipping)"
+fi
