@@ -34,10 +34,11 @@ HOST_STOW_FILE="$REPO_ROOT/hosts/$HOST/stow.txt"
 DOTFILES_DIR="$REPO_ROOT/dotfiles"
 HOST_DOTFILES_DIR="$REPO_ROOT/hosts/$HOST/dotfiles"
 
-# Create temporary build directory for merging common and host-specific dotfiles
+# Create persistent merge directory for merging common and host-specific dotfiles
 # This allows host-specific dotfiles to override individual files from common packages
 # without requiring duplication of unchanged files
-TEMP_DOTFILES_DIR="/tmp/janstrap-dotfiles-$$"
+# Must be persistent (not /tmp) so symlinks remain valid after script exits
+TEMP_DOTFILES_DIR="$HOME/.local/share/janstrap/merged-dotfiles"
 
 # Verify stow is installed
 if ! has_cmd stow; then
@@ -127,16 +128,12 @@ stow_from_file() {
     done < "$stow_file"
 }
 
-# Create temporary dotfiles directory
+# Create merge directory (persistent, so symlinks remain valid)
+# Clean it first to ensure we have fresh merged dotfiles
+if [ -d "$TEMP_DOTFILES_DIR" ]; then
+    rm -rf "$TEMP_DOTFILES_DIR"
+fi
 mkdir -p "$TEMP_DOTFILES_DIR"
-
-# Ensure cleanup on exit
-cleanup() {
-    if [ -d "$TEMP_DOTFILES_DIR" ]; then
-        rm -rf "$TEMP_DOTFILES_DIR"
-    fi
-}
-trap cleanup EXIT INT TERM
 
 # Stow common dotfiles
 if [ -f "$COMMON_STOW_FILE" ]; then
