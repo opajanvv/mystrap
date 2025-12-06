@@ -1,0 +1,147 @@
+#!/bin/bash
+# hypr-switch: Switch between monitor configurations
+# Reads config from ~/.config/hypr/hypr-switch.conf
+
+set -euo pipefail
+
+CONFIG_FILE="$HOME/.config/hypr/hypr-switch.conf"
+CACHE_FILE="/tmp/hypr-switch-last-mode"
+WS_DUAL="$HOME/.config/hypr/workspaces-dual.conf"
+WS_SINGLE="$HOME/.config/hypr/workspaces-single.conf"
+WS_CURRENT="$HOME/.config/hypr/workspaces-current.conf"
+
+# Load configuration
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "Error: Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+source "$CONFIG_FILE"
+
+# Usage
+usage() {
+    echo "Usage: hypr-switch {home|laptop|presenter}"
+    exit 1
+}
+
+# Check if mode is already active (to avoid redundant operations)
+is_mode_active() {
+    [[ -f "$CACHE_FILE" ]] && [[ "$(cat "$CACHE_FILE")" == "$1" ]]
+}
+
+# Apply monitor configuration
+apply_monitors() {
+    local monitors="$1"
+    echo "$monitors" | while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        hyprctl keyword monitor "$line"
+    done
+}
+
+# Switch workspace configuration
+switch_workspaces() {
+    local mode="$1"
+    local target
+
+    if [[ "$mode" == "dual" ]]; then
+        target="$WS_DUAL"
+    else
+        target="$WS_SINGLE"
+    fi
+
+    # Update symlink
+    ln -sf "$target" "$WS_CURRENT"
+
+    # Reload Hyprland config
+    hyprctl reload
+}
+
+# Remap windows when switching modes
+remap_windows_to_single() {
+    # Move windows from mon1 workspaces (1-4) to global workspaces 5-8
+    for ws in {1..4}; do
+        hyprctl dispatch focusmonitor 1
+        hyprctl dispatch split-workspace "$ws"
+        local target_ws=$((ws + 4))
+        hyprctl dispatch split-movetoworkspace "$target_ws"
+    done
+}
+
+remap_windows_to_dual() {
+    # Move windows from global workspaces 5-8 back to mon1 workspaces 1-4
+    for ws in {5..8}; do
+        hyprctl dispatch split-workspace "$ws"
+        local target_ws=$((ws - 4))
+        hyprctl dispatch movewindow mon:1
+        hyprctl dispatch focusmonitor 1
+        hyprctl dispatch split-movetoworkspace "$target_ws"
+    done
+}
+
+# Restart UI components
+restart_ui() {
+    killall waybar 2>/dev/null || true
+    waybar &
+    killall hyprpaper 2>/dev/null || true
+    hyprpaper &
+}
+
+# Mode: HOME (dual monitors)
+mode_home() {
+    if is_mode_active "home"; then
+        echo "Already in HOME mode"
+        return
+    fi
+
+    echo "Switching to HOME mode (dual monitors)..."
+    apply_monitors "$HOME_MONITORS"
+    switch_workspaces "dual"
+    [[ -f "$CACHE_FILE" ]] && [[ "$(cat "$CACHE_FILE")" == "laptop" ]] && remap_windows_to_dual
+    restart_ui
+    echo "home" > "$CACHE_FILE"
+}
+
+# Mode: LAPTOP (single monitor)
+mode_laptop() {
+    if is_mode_active "laptop"; then
+        echo "Already in LAPTOP mode"
+        return
+    fi
+
+    echo "Switching to LAPTOP mode (single monitor)..."
+    [[ -f "$CACHE_FILE" ]] && [[ "$(cat "$CACHE_FILE")" == "home" ]] && remap_windows_to_single
+    apply_monitors "$LAPTOP_MONITORS"
+    switch_workspaces "single"
+    restart_ui
+    echo "laptop" > "$CACHE_FILE"
+}
+
+# Mode: PRESENTER (mirrored)
+mode_presenter() {
+    if is_mode_active "presenter"; then
+        echo "Already in PRESENTER mode"
+        return
+    fi
+
+    echo "Switching to PRESENTER mode (mirrored)..."
+    apply_monitors "$PRESENTER_MONITORS"
+    switch_workspaces "single"
+    restart_ui
+    echo "presenter" > "$CACHE_FILE"
+}
+
+# Main
+case "${1:-}" in
+    home)
+        mode_home
+        ;;
+    laptop)
+        mode_laptop
+        ;;
+    presenter)
+        mode_presenter
+        ;;
+    *)
+        usage
+        ;;
+esac
