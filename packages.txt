@@ -8,3 +8,4 @@ mc
 cmake
 meson
 cpio
+hyprland
