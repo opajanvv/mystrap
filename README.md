@@ -244,6 +244,36 @@ tail -f ~/.janstrap-auto-update.log
 
 **Tip:** For critical changes, test on a single machine first, then push to let other machines auto-update.
 
+### Sudo and Post-Install Scripts
+
+Post-install scripts that enable systemd services require `sudo` access. When running manually, you'll be prompted for your password. **However, automated/scheduled runs cannot prompt for passwords.**
+
+**Behavior:**
+- **Manual runs**: Prompts for password → services enabled
+- **Automated runs**: Skips service enablement → logs warning
+
+**Solution for full automation** (optional):
+
+If you want post-install scripts to enable services during automated runs, configure passwordless sudo for specific systemctl commands:
+
+1. Create a sudoers file:
+```bash
+sudo visudo -f /etc/sudoers.d/janstrap
+```
+
+2. Add this content (replace `yourusername` with your actual username):
+```
+yourusername ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable *, /usr/bin/systemctl start *, /usr/bin/systemctl mask *
+```
+
+3. Save and exit (Ctrl+X, then Y, then Enter in nano)
+
+**Important notes:**
+- This is a **one-time manual setup** per machine
+- Only needed if you want automated service enablement
+- Services only need to be enabled **once** - subsequent updates don't re-enable them
+- Most users can skip this and just enable services during the first manual run
+
 ## Configuration Files
 
 ### packages.txt
@@ -336,6 +366,16 @@ Both scripts will run if they exist (common first, then host-specific). This all
 
 set -eu
 
+# Source helpers for logging
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/../scripts/helpers.sh" 2>/dev/null || . "$(dirname "$SCRIPT_DIR")/scripts/helpers.sh"
+
+# Check if we can use sudo without password
+if ! sudo -n true 2>/dev/null; then
+    warn "Cannot enable cronie.service without sudo access (run manually or configure passwordless sudo)"
+    exit 0
+fi
+
 # Enable service if not already enabled
 if ! systemctl is-enabled cronie.service >/dev/null 2>&1; then
     sudo systemctl enable cronie.service
@@ -357,6 +397,16 @@ fi
 # Enables and starts the tlp service
 
 set -eu
+
+# Source helpers for logging
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/../../scripts/helpers.sh" 2>/dev/null || . "$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/helpers.sh"
+
+# Check if we can use sudo without password
+if ! sudo -n true 2>/dev/null; then
+    warn "Cannot enable tlp.service without sudo access (run manually or configure passwordless sudo)"
+    exit 0
+fi
 
 # Enable service if not already enabled
 if ! systemctl is-enabled tlp.service >/dev/null 2>&1; then
