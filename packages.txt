@@ -4,3 +4,4 @@ cronie
 lynx
 google-chrome
 croc
+mc

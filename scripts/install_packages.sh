@@ -1,5 +1,5 @@
 #!/bin/sh
-# install_packages.sh - Install common and host-specific packages
+# install_packages.sh - Install packages from packages.txt
 
 set -eu
 
@@ -10,31 +10,11 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Source helpers
 . "$SCRIPT_DIR/helpers.sh"
 
-HOST=""
+PACKAGES_FILE="$REPO_ROOT/packages.txt"
 
-# Parse command line arguments
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --host)
-            HOST="$2"
-            shift 2
-            ;;
-        *)
-            die "Unknown option: $1. Usage: $0 --host <hostname>"
-            ;;
-    esac
-done
-
-if [ -z "$HOST" ]; then
-    die "Hostname not specified. Usage: $0 --host <hostname>"
-fi
-
-COMMON_PACKAGES_FILE="$REPO_ROOT/packages.txt"
-HOST_PACKAGES_FILE="$REPO_ROOT/hosts/$HOST/packages.txt"
-
-# Check for common packages file
-if [ ! -f "$COMMON_PACKAGES_FILE" ]; then
-    die "Common packages file not found: $COMMON_PACKAGES_FILE"
+# Check for packages file
+if [ ! -f "$PACKAGES_FILE" ]; then
+    die "Packages file not found: $PACKAGES_FILE"
 fi
 
 # Function to read packages from a file
@@ -43,7 +23,7 @@ read_packages() {
     if [ ! -f "$file" ]; then
         return 0
     fi
-    
+
     while IFS= read -r line || [ -n "$line" ]; do
         # Skip comments and empty lines
         case "$line" in
@@ -53,56 +33,31 @@ read_packages() {
     done < "$file"
 }
 
-# Read packages from both files
-log "Reading packages from $COMMON_PACKAGES_FILE"
-common_packages=$(read_packages "$COMMON_PACKAGES_FILE")
+# Read packages
+log "Reading packages from $PACKAGES_FILE"
+packages=$(read_packages "$PACKAGES_FILE" | tr '\n' ' ')
 
-if [ -f "$HOST_PACKAGES_FILE" ]; then
-    log "Reading host-specific packages from $HOST_PACKAGES_FILE"
-    host_packages=$(read_packages "$HOST_PACKAGES_FILE")
-else
-    log "Host-specific packages file not found: $HOST_PACKAGES_FILE (skipping)"
-    host_packages=""
-fi
-
-# Combine and remove duplicates (using sort -u)
-all_packages=$(printf "%s\n%s\n" "$common_packages" "$host_packages" | sort -u | tr '\n' ' ')
-
-if [ -z "$all_packages" ]; then
+if [ -z "$packages" ]; then
     warn "No packages to install"
     exit 0
 fi
 
 # Install all packages
-log "Installing packages (common + host-specific, duplicates removed)..."
-install_packages "$all_packages"
+log "Installing packages..."
+install_packages "$packages"
 
 log "Packages installed successfully"
 
 # Run post-install scripts for each package
 log "Checking for post-install scripts..."
 
-# Function to run install script if it exists
-run_install_script() {
-    script_path="$1"
-    package_name="$2"
-
+# Process each package for post-install scripts
+for package in $packages; do
+    script_path="$REPO_ROOT/install/${package}.sh"
     if [ -f "$script_path" ] && [ -x "$script_path" ]; then
         log "Running post-install script: $script_path"
-        "$script_path" --host "$HOST" || warn "Post-install script failed: $script_path"
+        "$script_path" || warn "Post-install script failed: $script_path"
     fi
-}
-
-# Process each package for post-install scripts
-for package in $all_packages; do
-    # Check for common install script
-    common_script="$REPO_ROOT/install/${package}.sh"
-    run_install_script "$common_script" "$package"
-
-    # Check for host-specific install script
-    host_script="$REPO_ROOT/hosts/$HOST/install/${package}.sh"
-    run_install_script "$host_script" "$package"
 done
 
 log "Post-install scripts completed"
-
