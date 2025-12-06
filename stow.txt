@@ -1,2 +1,3 @@
 # Common dotfiles to stow
 waybar
+hypr
