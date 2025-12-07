@@ -23,12 +23,9 @@ else
     log "User ttyd already exists"
 fi
 
-# Create systemd service file
+# Create/update systemd service file
 SERVICE_FILE="/etc/systemd/system/ttyd.service"
-if [ ! -f "$SERVICE_FILE" ]; then
-    log "Creating systemd service file..."
-    sudo tee "$SERVICE_FILE" >/dev/null <<'EOF'
-[Unit]
+SERVICE_CONTENT='[Unit]
 Description=ttyd - Share your terminal over the web
 Documentation=https://github.com/tsl0922/ttyd
 After=network.target
@@ -41,11 +38,22 @@ Restart=on-failure
 RestartSec=5s
 
 [Install]
-WantedBy=multi-user.target
-EOF
-    log "Systemd service file created"
+WantedBy=multi-user.target'
+
+# Check if service file needs updating
+NEEDS_UPDATE=false
+if [ ! -f "$SERVICE_FILE" ]; then
+    NEEDS_UPDATE=true
+    log "Creating systemd service file..."
+elif ! echo "$SERVICE_CONTENT" | diff -q - "$SERVICE_FILE" >/dev/null 2>&1; then
+    NEEDS_UPDATE=true
+    log "Updating systemd service file..."
 else
-    log "Systemd service file already exists"
+    log "Systemd service file is up to date"
+fi
+
+if [ "$NEEDS_UPDATE" = "true" ]; then
+    echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" >/dev/null
 fi
 
 # Reload systemd daemon
@@ -60,8 +68,11 @@ else
     log "ttyd.service already enabled"
 fi
 
-# Start service if not already running
-if ! systemctl is-active ttyd.service >/dev/null 2>&1; then
+# Start or restart service
+if [ "$NEEDS_UPDATE" = "true" ] && systemctl is-active ttyd.service >/dev/null 2>&1; then
+    log "Restarting ttyd.service..."
+    sudo systemctl restart ttyd.service
+elif ! systemctl is-active ttyd.service >/dev/null 2>&1; then
     log "Starting ttyd.service..."
     sudo systemctl start ttyd.service
 else
