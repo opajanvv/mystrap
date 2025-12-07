@@ -1,0 +1,54 @@
+# Merged git configuration
+# Based on Omarchy defaults + https://opa.janvv.nl/blog/2025-10-12-gitconfig
+
+[color "status"]
+	changed = red bold
+	untracked = red bold
+	added = green bold
+
+[core]
+	autocrlf = input
+	editor = nvim
+
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	cm = "!f() { git add -A . && git status && echo 'Proceed with commit? (y/n)' && read ans && [ \"$ans\" = 'y' ] && git commit -m \"$*\" && git push; }; f"
+	nbr = "!f() { git checkout -b $1 && git push -u origin $1; }; f"
+	rmbr = "!f() { if [ \"$(git symbolic-ref --short HEAD)\" = \"$1\" ]; then echo 'Cannot delete the current branch. Please switch to a different branch first.'; else git branch --list $1 && echo 'Delete branch $1? (y/n)' && read ans && [ \"$ans\" = 'y' ] && git branch -d $1 && (git ls-remote --exit-code --heads origin $1 > /dev/null 2>&1 && git push origin --delete $1 || echo 'Remote branch not found, only local branch deleted'); fi; }; f"
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+
+[commit]
+	verbose = true
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = -version:refname
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+[user]
+	name = Jan van Veldhuizen
+	email = jan@janvv.nl
