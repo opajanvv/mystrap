@@ -1,7 +1,6 @@
 #!/bin/sh
 # Post-install script for ttyd
 # Sets up ttyd as a systemd service running on port 4711
-# Creates ttyd user and configures firewall
 
 set -eu
 
@@ -15,54 +14,6 @@ if ! sudo -n true 2>/dev/null; then
     exit 0
 fi
 
-# Create or update ttyd user
-if ! id ttyd >/dev/null 2>&1; then
-    log "Creating ttyd user..."
-    sudo useradd -r -s /bin/bash -m -d /home/ttyd -c "ttyd service user" ttyd
-    # Lock the account - no password login
-    sudo passwd -l ttyd
-else
-    log "User ttyd already exists, updating configuration..."
-    # Update home directory and shell
-    sudo usermod -d /home/ttyd -s /bin/bash ttyd
-    # Ensure password is locked
-    sudo passwd -l ttyd 2>/dev/null || true
-fi
-
-# Ensure home directory exists and has correct ownership
-if [ ! -d /home/ttyd ]; then
-    log "Creating home directory for ttyd user..."
-    sudo mkdir -p /home/ttyd
-    sudo chown ttyd:ttyd /home/ttyd
-    sudo chmod 700 /home/ttyd
-fi
-
-# Create/update restricted .bashrc for ttyd user
-TTYD_BASHRC="/home/ttyd/.bashrc"
-BASHRC_CONTENT='# Restricted shell for ttyd user
-# Users must authenticate to gain access
-
-echo "=========================================="
-echo "ttyd Terminal - Restricted Access"
-echo "=========================================="
-echo ""
-echo "This is a restricted shell with minimal permissions."
-echo "To access your account, use: sudo -u <username> -i"
-echo ""
-echo "=========================================="
-
-# Minimal PATH
-export PATH=/usr/bin:/bin
-
-# Remove dangerous commands from environment
-unset HISTFILE'
-
-# Always update .bashrc to ensure correct content and permissions
-log "Creating/updating restricted .bashrc for ttyd user..."
-echo "$BASHRC_CONTENT" | sudo tee "$TTYD_BASHRC" >/dev/null
-sudo chown ttyd:ttyd "$TTYD_BASHRC"
-sudo chmod 644 "$TTYD_BASHRC"
-
 # Create/update systemd service file
 SERVICE_FILE="/etc/systemd/system/ttyd.service"
 SERVICE_CONTENT='[Unit]
@@ -72,23 +23,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=ttyd
-Group=ttyd
-ExecStart=/usr/bin/ttyd -p 4711 -W /bin/bash
+ExecStart=/usr/bin/ttyd -p 4711 -W /usr/bin/login
 Restart=on-failure
 RestartSec=5s
-
-# Security hardening
-# Note: NoNewPrivileges cannot be enabled as it prevents sudo authentication
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths=/home/ttyd
-ProtectKernelTunables=true
-ProtectKernelModules=true
-ProtectControlGroups=true
-RestrictRealtime=true
-RestrictNamespaces=true
 
 [Install]
 WantedBy=multi-user.target'
