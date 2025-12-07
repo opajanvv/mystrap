@@ -36,7 +36,7 @@ After=network.target
 [Service]
 Type=simple
 User=ttyd
-ExecStart=/usr/bin/ttyd -p 4711 -W /usr/bin/login
+ExecStart=/usr/bin/ttyd -p 4711 -W /bin/bash
 Restart=on-failure
 RestartSec=5s
 
