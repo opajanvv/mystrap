@@ -9,3 +9,4 @@ cmake
 meson
 cpio
 hyprland
+ttyd
