@@ -37,12 +37,9 @@ if [ ! -d /home/ttyd ]; then
     sudo chmod 700 /home/ttyd
 fi
 
-# Create restricted .bashrc for ttyd user
+# Create/update restricted .bashrc for ttyd user
 TTYD_BASHRC="/home/ttyd/.bashrc"
-if [ ! -f "$TTYD_BASHRC" ]; then
-    log "Creating restricted .bashrc for ttyd user..."
-    sudo tee "$TTYD_BASHRC" >/dev/null <<'EOF'
-# Restricted shell for ttyd user
+BASHRC_CONTENT='# Restricted shell for ttyd user
 # Users must authenticate to gain access
 
 echo "=========================================="
@@ -58,12 +55,13 @@ echo "=========================================="
 export PATH=/usr/bin:/bin
 
 # Remove dangerous commands from environment
-unset HISTFILE
-EOF
-    sudo chown ttyd:ttyd "$TTYD_BASHRC"
-else
-    log "Restricted .bashrc already exists"
-fi
+unset HISTFILE'
+
+# Always update .bashrc to ensure correct content and permissions
+log "Creating/updating restricted .bashrc for ttyd user..."
+echo "$BASHRC_CONTENT" | sudo tee "$TTYD_BASHRC" >/dev/null
+sudo chown ttyd:ttyd "$TTYD_BASHRC"
+sudo chmod 644 "$TTYD_BASHRC"
 
 # Create/update systemd service file
 SERVICE_FILE="/etc/systemd/system/ttyd.service"
@@ -81,7 +79,7 @@ Restart=on-failure
 RestartSec=5s
 
 # Security hardening
-NoNewPrivileges=true
+# Note: NoNewPrivileges cannot be enabled as it prevents sudo authentication
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
@@ -91,7 +89,6 @@ ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictRealtime=true
 RestrictNamespaces=true
-RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target'
