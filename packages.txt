@@ -10,3 +10,4 @@ meson
 cpio
 hyprland
 ttyd
+mousepad
