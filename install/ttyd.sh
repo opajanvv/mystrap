@@ -25,6 +25,14 @@ else
     log "User ttyd already exists"
 fi
 
+# Ensure home directory exists and has correct ownership
+if [ ! -d /home/ttyd ]; then
+    log "Creating home directory for ttyd user..."
+    sudo mkdir -p /home/ttyd
+    sudo chown ttyd:ttyd /home/ttyd
+    sudo chmod 700 /home/ttyd
+fi
+
 # Create restricted .bashrc for ttyd user
 TTYD_BASHRC="/home/ttyd/.bashrc"
 if [ ! -f "$TTYD_BASHRC" ]; then
