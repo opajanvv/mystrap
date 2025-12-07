@@ -15,14 +15,18 @@ if ! sudo -n true 2>/dev/null; then
     exit 0
 fi
 
-# Create ttyd user if it doesn't exist
+# Create or update ttyd user
 if ! id ttyd >/dev/null 2>&1; then
     log "Creating ttyd user..."
     sudo useradd -r -s /bin/bash -m -d /home/ttyd -c "ttyd service user" ttyd
     # Lock the account - no password login
     sudo passwd -l ttyd
 else
-    log "User ttyd already exists"
+    log "User ttyd already exists, updating configuration..."
+    # Update home directory and shell
+    sudo usermod -d /home/ttyd -s /bin/bash ttyd
+    # Ensure password is locked
+    sudo passwd -l ttyd 2>/dev/null || true
 fi
 
 # Ensure home directory exists and has correct ownership
@@ -39,14 +43,14 @@ if [ ! -f "$TTYD_BASHRC" ]; then
     log "Creating restricted .bashrc for ttyd user..."
     sudo tee "$TTYD_BASHRC" >/dev/null <<'EOF'
 # Restricted shell for ttyd user
-# Users must authenticate with 'su - <username>' to gain access
+# Users must authenticate to gain access
 
 echo "=========================================="
 echo "ttyd Terminal - Restricted Access"
 echo "=========================================="
 echo ""
 echo "This is a restricted shell with minimal permissions."
-echo "To access your account, use: su - <username>"
+echo "To access your account, use: sudo -u <username> -i"
 echo ""
 echo "=========================================="
 
