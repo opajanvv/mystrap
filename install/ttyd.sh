@@ -18,9 +18,39 @@ fi
 # Create ttyd user if it doesn't exist
 if ! id ttyd >/dev/null 2>&1; then
     log "Creating ttyd user..."
-    sudo useradd -r -s /usr/bin/nologin -d /nonexistent -c "ttyd service user" ttyd
+    sudo useradd -r -s /bin/bash -m -d /home/ttyd -c "ttyd service user" ttyd
+    # Lock the account - no password login
+    sudo passwd -l ttyd
 else
     log "User ttyd already exists"
+fi
+
+# Create restricted .bashrc for ttyd user
+TTYD_BASHRC="/home/ttyd/.bashrc"
+if [ ! -f "$TTYD_BASHRC" ]; then
+    log "Creating restricted .bashrc for ttyd user..."
+    sudo tee "$TTYD_BASHRC" >/dev/null <<'EOF'
+# Restricted shell for ttyd user
+# Users must authenticate with 'su - <username>' to gain access
+
+echo "=========================================="
+echo "ttyd Terminal - Restricted Access"
+echo "=========================================="
+echo ""
+echo "This is a restricted shell with minimal permissions."
+echo "To access your account, use: su - <username>"
+echo ""
+echo "=========================================="
+
+# Minimal PATH
+export PATH=/usr/bin:/bin
+
+# Remove dangerous commands from environment
+unset HISTFILE
+EOF
+    sudo chown ttyd:ttyd "$TTYD_BASHRC"
+else
+    log "Restricted .bashrc already exists"
 fi
 
 # Create/update systemd service file
@@ -33,9 +63,23 @@ After=network.target
 [Service]
 Type=simple
 User=ttyd
+Group=ttyd
 ExecStart=/usr/bin/ttyd -p 4711 -W /bin/bash
 Restart=on-failure
 RestartSec=5s
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/ttyd
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target'
