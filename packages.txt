@@ -11,3 +11,9 @@ cpio
 hyprland
 ttyd
 mousepad
+bind
+dhclient
+npm
+rsync
+vi
+gimp
