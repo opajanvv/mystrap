@@ -2,3 +2,4 @@
 waybar
 hypr
 shell
+git
