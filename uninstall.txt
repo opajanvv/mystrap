@@ -2,3 +2,4 @@
 # These packages will be removed if they are installed
 omarchy-chromium
 typora
+1password
