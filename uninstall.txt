@@ -1,5 +1,5 @@
 # Omarchy bloatware to remove on fresh install
 # These packages ship with Omarchy but aren't needed
-omarchy-chromium    # Using google-chrome instead
-typora              # Using mousepad instead
-1password           # Not using password manager
+omarchy-chromium
+typora
+1password
