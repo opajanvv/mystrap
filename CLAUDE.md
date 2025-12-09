@@ -17,13 +17,6 @@ This repository is in early development, being built incrementally and tested ac
 ./install_all.sh --host <name> # Override hostname detection
 ```
 
-### Auto-Update Management
-```bash
-./scripts/enable_auto_update.sh   # Set up cron-based auto-updates
-./scripts/disable_auto_update.sh  # Remove auto-update cron jobs
-tail -f ~/.janstrap-auto-update.log  # Monitor auto-update logs
-```
-
 ### Individual Components
 ```bash
 ./scripts/uninstall_packages.sh  # Uninstall packages from uninstall.txt
@@ -43,7 +36,7 @@ The `install_all.sh` orchestrates four sequential steps:
 
 ### Configuration Files
 - `packages.txt` - Packages to install (one per line, supports comments)
-- `uninstall.txt` - Packages to remove
+- `uninstall.txt` - Omarchy bloatware to remove on fresh install
 - `stow.txt` - Dotfile packages to stow (corresponds to `dotfiles/` subdirs)
 
 ### Directory Structure
@@ -85,24 +78,32 @@ install/            # Post-install scripts (optional)
 
 ### Package Management
 - Uses `yay` for all package operations (official repos + AUR)
-- `install_packages()` uses `yay -S --needed --noconfirm`
-- `uninstall_packages()` uses `yay -Rns --noconfirm` (removes with dependencies)
+- Install: `yay -S --needed --noconfirm` (in install_packages.sh)
+- Uninstall: `yay -Rns --noconfirm` (in uninstall_packages.sh, removes with dependencies)
 
 ### Idempotency & Safety
 - All scripts are POSIX sh compatible (use `#!/bin/sh`, not bash)
 - Git-aware: automatically pulls updates, exits early if none found
-- Stow conflict resolution: removes non-symlink files blocking stow operations
-- Uses `append_if_absent()` to avoid duplicate lines in config files
+- Stow conflict resolution: `stow_package()` removes non-symlink files blocking stow operations
 - Post-install scripts should check state before making changes
+- Minimal defensive checks - let commands fail naturally with clear errors
 
 ## Development Guidelines
+
+### Philosophy
+This codebase follows a **ruthless simplification** approach:
+- **Trust the caller** - No defensive existence checks for required files/commands
+- **Let commands fail naturally** - Clear error messages from tools are sufficient
+- **Avoid abstraction** - Only create functions when eliminating substantial duplication
+- **No meta-engineering** - Focus on solving actual problems, not building automation infrastructure
+- **Keep it simple** - When in doubt, use direct commands over wrappers
 
 ### Shell Script Conventions
 - Use POSIX sh for maximum compatibility (not bash-specific features)
 - Always `set -eu` at the start of scripts
-- Source `scripts/helpers.sh` for common utilities
-- Use logging functions: `log()`, `warn()`, `die()`
-- Check command availability with `has_cmd()`
+- Source `scripts/helpers.sh` for logging: `log()`, `warn()`, `die()`
+- Trust the caller - let commands fail naturally with clear errors
+- Use `hostname` command directly (no wrapper)
 
 ### Adding New Packages
 1. Add package name to `packages.txt`
@@ -117,5 +118,5 @@ install/            # Post-install scripts (optional)
 ### Host-Specific Configuration
 - Create `hosts/<hostname>/overrides.conf` for Hyprland settings
 - Create `hosts/<hostname>/dotfiles/` for host-specific dotfile packages
-- Use `get_hostname()` helper to detect current host
+- Use `hostname` command to detect current host
 - Currently configured hosts: `laptop1`, `laptop2`
