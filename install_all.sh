@@ -33,7 +33,7 @@ done
 
 # Detect hostname
 if [ -z "$HOST" ]; then
-    HOST=$(get_hostname)
+    HOST=$(hostname)
 fi
 
 log "Detected hostname: $HOST"
@@ -43,22 +43,18 @@ HAS_UPDATES=false
 IS_GIT_REPO=false
 if [ -d "$SCRIPT_DIR/.git" ]; then
     IS_GIT_REPO=true
-    if has_cmd git; then
-        cd "$SCRIPT_DIR"
-        # Check if there are updates before pulling
-        git fetch -q 2>/dev/null || true
-        current_head=$(git rev-parse HEAD 2>/dev/null || echo "")
-        remote_head=$(git rev-parse @{u} 2>/dev/null || echo "")
-        
-        if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
-            HAS_UPDATES=true
-            log "Pulling latest changes from git repository..."
-            git pull || warn "Failed to pull updates, continuing anyway"
-        else
-            log "Repository is already up to date"
-        fi
+    cd "$SCRIPT_DIR"
+    # Check if there are updates before pulling
+    git fetch -q 2>/dev/null || true
+    current_head=$(git rev-parse HEAD 2>/dev/null || echo "")
+    remote_head=$(git rev-parse @{u} 2>/dev/null || echo "")
+
+    if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
+        HAS_UPDATES=true
+        log "Pulling latest changes from git repository..."
+        git pull || warn "Failed to pull updates, continuing anyway"
     else
-        warn "git not found, skipping pull"
+        log "Repository is already up to date"
     fi
 fi
 
