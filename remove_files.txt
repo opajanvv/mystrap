@@ -1,0 +1,6 @@
+# Files to remove (one per line, full paths)
+# Use ~ for home directory - will be expanded automatically
+# Comments start with #
+
+# Omarchy WebApps (desktop files)
+~/.local/share/applications/webapp-basecamp.desktop
