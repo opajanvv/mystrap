@@ -15,11 +15,11 @@ append_if_absent() {
     file="$1"
     line="$2"
 
-    if ! grep -qF "$line" "$file" 2>/dev/null; then
+    if grep -qF "$line" "$file"; then
+        log "Line already present in $file, skipping"
+    else
         echo "$line" >> "$file"
         log "Appended to $file: $line"
-    else
-        log "Line already present in $file, skipping"
     fi
 }
 
@@ -56,12 +56,6 @@ elif [ -f "$COMMON_OVERRIDES_FILE" ] && [ -s "$COMMON_OVERRIDES_FILE" ]; then
     log "Using common overrides"
 else
     log "No overrides file found (skipping)"
-    exit 0
-fi
-
-# Check if Hyprland config exists
-if [ ! -f "$HYPRLAND_CONFIG" ]; then
-    log "Hyprland config not found: $HYPRLAND_CONFIG (skipping overrides)"
     exit 0
 fi
 

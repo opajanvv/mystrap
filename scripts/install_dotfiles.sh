@@ -13,24 +13,12 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 STOW_FILE="$REPO_ROOT/stow.txt"
 DOTFILES_DIR="$REPO_ROOT/dotfiles"
 
-# Check if stow.txt exists
-if [ ! -f "$STOW_FILE" ]; then
-    warn "stow.txt not found, skipping dotfiles"
-    exit 0
-fi
-
 # Read and stow packages from stow.txt
 while IFS= read -r package || [ -n "$package" ]; do
     # Skip comments and empty lines
     case "$package" in
         \#*|"") continue ;;
     esac
-
-    # Check if package directory exists
-    if [ ! -d "$DOTFILES_DIR/$package" ]; then
-        warn "Package directory not found: $package (skipping)"
-        continue
-    fi
 
     log "Stowing $package..."
 
