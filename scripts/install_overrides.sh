@@ -10,6 +10,19 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Source helpers
 . "$SCRIPT_DIR/helpers.sh"
 
+# Local helper: append line to file if not already present
+append_if_absent() {
+    file="$1"
+    line="$2"
+
+    if ! grep -qF "$line" "$file" 2>/dev/null; then
+        echo "$line" >> "$file"
+        log "Appended to $file: $line"
+    else
+        log "Line already present in $file, skipping"
+    fi
+}
+
 HOST=""
 
 # Parse command line arguments

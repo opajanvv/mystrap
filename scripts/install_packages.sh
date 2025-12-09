@@ -43,8 +43,8 @@ if [ -z "$packages" ]; then
 fi
 
 # Install all packages
-log "Installing packages..."
-install_packages "$packages"
+log "Installing packages with yay: $packages"
+yay -S --needed --noconfirm $packages || die "Failed to install packages"
 
 log "Packages installed successfully"
 

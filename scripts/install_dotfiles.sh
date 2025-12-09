@@ -13,11 +13,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 STOW_FILE="$REPO_ROOT/stow.txt"
 DOTFILES_DIR="$REPO_ROOT/dotfiles"
 
-# Verify stow is installed
-if ! has_cmd stow; then
-    die "stow not found. Please install it first (should be in packages.txt)."
-fi
-
 # Check if stow.txt exists
 if [ ! -f "$STOW_FILE" ]; then
     warn "stow.txt not found, skipping dotfiles"
@@ -68,7 +63,7 @@ done < "$STOW_FILE"
 log "Common dotfiles installed successfully"
 
 # Install host-specific dotfiles if they exist
-HOST=$(get_hostname)
+HOST=$(hostname)
 HOST_DOTFILES_DIR="$REPO_ROOT/hosts/$HOST/dotfiles"
 
 if [ -d "$HOST_DOTFILES_DIR" ]; then

@@ -9,11 +9,6 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/../scripts/helpers.sh" 2>/dev/null || . "$(dirname "$SCRIPT_DIR")/scripts/helpers.sh"
 
-# Check if resolvectl is available
-if ! has_cmd resolvectl; then
-    die "resolvectl command not found. systemd-resolved may not be installed."
-fi
-
 # Check if we can use sudo without password
 if ! sudo -n true 2>/dev/null; then
     warn "Cannot configure systemd-resolved without sudo access (run manually or configure passwordless sudo)"
@@ -109,15 +104,11 @@ else
 fi
 
 # Step 3: Renew DHCP lease
-if has_cmd dhclient; then
-    log "Renewing DHCP lease to apply DNS settings..."
-    sudo dhclient -r >/dev/null 2>&1 || true
-    sleep 1
-    sudo dhclient >/dev/null 2>&1 || true
-    sleep 2
-else
-    warn "dhclient not found, skipping DHCP renewal. DNS settings may not be updated immediately."
-fi
+log "Renewing DHCP lease to apply DNS settings..."
+sudo dhclient -r >/dev/null 2>&1 || true
+sleep 1
+sudo dhclient >/dev/null 2>&1 || true
+sleep 2
 
 # Verify configuration
 log "Verifying configuration..."

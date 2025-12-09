@@ -81,21 +81,17 @@ else
 fi
 
 # Configure firewall (if ufw is available)
-if has_cmd ufw; then
-    # Check if ufw is active
-    if sudo ufw status | grep -q "Status: active"; then
-        # Check if port is already open
-        if ! sudo ufw status | grep -q "4711/tcp"; then
-            log "Opening port 4711/tcp in firewall..."
-            sudo ufw allow 4711/tcp
-        else
-            log "Port 4711/tcp already open in firewall"
-        fi
+# Check if ufw is active
+if sudo ufw status 2>/dev/null | grep -q "Status: active"; then
+    # Check if port is already open
+    if ! sudo ufw status | grep -q "4711/tcp"; then
+        log "Opening port 4711/tcp in firewall..."
+        sudo ufw allow 4711/tcp
     else
-        log "ufw not active, skipping firewall configuration"
+        log "Port 4711/tcp already open in firewall"
     fi
 else
-    log "ufw not installed, skipping firewall configuration"
+    log "ufw not active or not installed, skipping firewall configuration"
 fi
 
 log "ttyd service setup complete"

@@ -60,7 +60,7 @@ if [ -z "$packages_to_remove" ]; then
 fi
 
 # Remove packages with their unused dependencies
-log "Uninstalling packages: $packages_to_remove"
-uninstall_packages "$packages_to_remove"
+log "Uninstalling packages with yay: $packages_to_remove"
+yay -Rns --noconfirm $packages_to_remove || die "Failed to uninstall packages"
 
 log "Packages uninstalled successfully"
