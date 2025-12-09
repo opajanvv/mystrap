@@ -1,5 +1,5 @@
-# Packages to uninstall from all workstations
-# These packages will be removed if they are installed
-omarchy-chromium
-typora
-1password
+# Omarchy bloatware to remove on fresh install
+# These packages ship with Omarchy but aren't needed
+omarchy-chromium    # Using google-chrome instead
+typora              # Using mousepad instead
+1password           # Not using password manager
