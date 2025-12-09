@@ -19,3 +19,4 @@ vi
 gimp
 systemd-resolved
 orca-slicer-bin
+balena-etcher
