@@ -45,9 +45,9 @@ if [ -d "$SCRIPT_DIR/.git" ]; then
     IS_GIT_REPO=true
     cd "$SCRIPT_DIR"
     # Check if there are updates before pulling
-    git fetch -q 2>/dev/null || true
-    current_head=$(git rev-parse HEAD 2>/dev/null || echo "")
-    remote_head=$(git rev-parse @{u} 2>/dev/null || echo "")
+    git fetch -q || true
+    current_head=$(git rev-parse HEAD || echo "")
+    remote_head=$(git rev-parse @{u} || echo "")
 
     if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
         HAS_UPDATES=true
