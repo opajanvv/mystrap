@@ -17,6 +17,6 @@ npm
 rsync
 vi
 gimp
-systemd-resolved
+systemd
 orca-slicer-bin
 balena-etcher
