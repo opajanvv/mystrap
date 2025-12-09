@@ -30,8 +30,9 @@ log "Creating sudoers file for user: $ACTUAL_USER"
 
 # Create sudoers file
 cat > "$SUDOERS_FILE" << EOF
-# mystrap - Allow specific commands without password for bootstrap automation
-$ACTUAL_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /usr/bin/firewall-cmd, /usr/bin/resolvectl
+# mystrap - Allow all commands without password for bootstrap automation
+# WARNING: Less secure - allows all sudo commands without password
+$ACTUAL_USER ALL=(ALL) NOPASSWD: ALL
 EOF
 
 # Set correct permissions
@@ -42,7 +43,7 @@ log "Sudoers file created: $SUDOERS_FILE"
 # Validate sudoers configuration
 if visudo -c; then
     log "Sudoers configuration is valid"
-    log "Passwordless sudo configured successfully for: systemctl, firewall-cmd, resolvectl"
+    log "Passwordless sudo configured successfully for ALL commands"
 else
     die "Sudoers configuration is invalid!"
 fi
