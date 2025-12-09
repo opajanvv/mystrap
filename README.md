@@ -50,13 +50,11 @@ janstrap/
 │   └── laptop2/
 │       └── overrides.conf  # Hyprland overrides (monitors, etc.)
 └── scripts/
-    ├── helpers.sh          # Utility functions
+    ├── helpers.sh          # Utility functions (log, warn, die)
     ├── uninstall_packages.sh
     ├── install_packages.sh
     ├── install_dotfiles.sh
-    ├── install_overrides.sh
-    ├── enable_auto_update.sh
-    └── disable_auto_update.sh
+    └── install_overrides.sh
 ```
 
 ## Requirements
@@ -113,11 +111,13 @@ waybar
 
 ### uninstall.txt
 
-Packages to remove (e.g., replacing Chromium with Chrome):
+Omarchy bloatware to remove on fresh install. These packages ship with Omarchy but aren't needed:
 
 ```
-# Replace Chromium with Chrome
-omarchy-chromium
+# Omarchy bloatware to remove on fresh install
+omarchy-chromium    # Using google-chrome instead
+typora              # Using mousepad instead
+1password           # Not using password manager
 ```
 
 ### stow.txt
@@ -196,41 +196,6 @@ If no updates are found, it exits early. Use `--force` to re-apply anyway:
 ```bash
 ./install_all.sh --force
 ```
-
-## Automatic Updates
-
-JanStrap can automatically check for and apply updates on a schedule.
-
-**Prerequisite:** Requires `cronie` and passwordless sudo for full automation.
-
-### Enable Auto-Updates
-
-```bash
-./scripts/enable_auto_update.sh
-```
-
-Choose a schedule (hourly, daily, etc.). Logs written to `~/.janstrap-auto-update.log`.
-
-### Disable Auto-Updates
-
-```bash
-./scripts/disable_auto_update.sh
-```
-
-### Passwordless Sudo (Optional)
-
-For full unattended automation, configure passwordless sudo:
-
-```bash
-sudo visudo -f /etc/sudoers.d/janstrap
-```
-
-Add (replace `yourusername`):
-```
-yourusername ALL=(ALL) NOPASSWD: /usr/bin/yay, /usr/bin/pacman, /usr/bin/systemctl enable *, /usr/bin/systemctl start *, /usr/bin/systemctl mask *
-```
-
-**Without this:** Auto-updates will fail at package installation. Manual runs will prompt for password.
 
 ## Omarchy-Specific Notes
 
