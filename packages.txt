@@ -19,5 +19,4 @@ vi
 gimp
 systemd
 orca-slicer-bin
-balena-etcher
 ttf-cascadia-mono-nerd
