@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Desktop launcher path
 LAUNCHER_DIR="$HOME/.local/share/applications"
-LAUNCHER_FILE="$LAUNCHER_DIR/Orcaslicer.desktop"
+LAUNCHER_FILE="$LAUNCHER_DIR/OrcaSlicer.desktop"
 
 # Expected launcher content
 EXPECTED_EXEC="env GDK_SCALE=1 /opt/orca-slicer/bin/orca-slicer %F"
