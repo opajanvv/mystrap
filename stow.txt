@@ -4,3 +4,4 @@ hypr
 shell
 git
 omarchy
+OrcaSlicer
