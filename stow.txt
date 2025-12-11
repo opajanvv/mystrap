@@ -3,3 +3,4 @@ waybar
 hypr
 shell
 git
+omarchy
