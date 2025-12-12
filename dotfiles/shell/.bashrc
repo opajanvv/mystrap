@@ -7,3 +7,6 @@ source ~/.local/share/omarchy/default/bash/rc
 
 # Add .local/bin to PATH for user scripts
 export PATH="$HOME/.local/bin:$PATH"
+
+# Default editor
+export EDITOR=nvim
