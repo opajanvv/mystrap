@@ -68,23 +68,27 @@ fi
 log "Starting installation process..."
 
 # 1. Remove unwanted files
-log "Step 1/5: Removing unwanted files..."
+log "Step 1/6: Removing unwanted files..."
 "$SCRIPTS_DIR/remove_files.sh" || die "File removal failed"
 
 # 2. Uninstall packages
-log "Step 2/5: Uninstalling packages..."
+log "Step 2/6: Uninstalling packages..."
 "$SCRIPTS_DIR/uninstall_packages.sh" || die "Packages uninstallation failed"
 
 # 3. Install packages
-log "Step 3/5: Installing packages..."
+log "Step 3/6: Installing packages..."
 "$SCRIPTS_DIR/install_packages.sh" || die "Packages installation failed"
 
-# 4. Install dotfiles
-log "Step 4/5: Installing dotfiles..."
+# 4. Install Claude Code
+log "Step 4/6: Installing Claude Code..."
+"$SCRIPTS_DIR/install_claude_code.sh" || die "Claude Code installation failed"
+
+# 5. Install dotfiles
+log "Step 5/6: Installing dotfiles..."
 "$SCRIPTS_DIR/install_dotfiles.sh" || die "Dotfiles installation failed"
 
-# 5. Install Hyprland overrides (host-specific)
-log "Step 5/5: Installing Hyprland overrides..."
+# 6. Install Hyprland overrides (host-specific)
+log "Step 6/6: Installing Hyprland overrides..."
 "$SCRIPTS_DIR/install_overrides.sh" --host "$HOST" || die "Overrides installation failed"
 
 log "Installation complete!"
