@@ -38,28 +38,23 @@ fi
 
 log "Detected hostname: $HOST"
 
-# Check for updates if repo is a git checkout
+# Check for updates
 HAS_UPDATES=false
-IS_GIT_REPO=false
-if [ -d "$SCRIPT_DIR/.git" ]; then
-    IS_GIT_REPO=true
-    cd "$SCRIPT_DIR"
-    # Check if there are updates before pulling
-    git fetch -q || true
-    current_head=$(git rev-parse HEAD || echo "")
-    remote_head=$(git rev-parse @{u} || echo "")
+cd "$SCRIPT_DIR"
+git fetch -q || true
+current_head=$(git rev-parse HEAD || echo "")
+remote_head=$(git rev-parse @{u} || echo "")
 
-    if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
-        HAS_UPDATES=true
-        log "Pulling latest changes from git repository..."
-        git pull || warn "Failed to pull updates, continuing anyway"
-    else
-        log "Repository is already up to date"
-    fi
+if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
+    HAS_UPDATES=true
+    log "Pulling latest changes..."
+    git pull || warn "Failed to pull updates, continuing anyway"
+else
+    log "Repository is already up to date"
 fi
 
-# Exit early if no updates and not forced (only for git repos)
-if [ "$IS_GIT_REPO" = "true" ] && [ "$HAS_UPDATES" = "false" ] && [ "$FORCE" = "false" ]; then
+# Exit early if no updates and not forced
+if [ "$HAS_UPDATES" = "false" ] && [ "$FORCE" = "false" ]; then
     log "No updates found. Use -f or --force to re-apply everything anyway."
     exit 0
 fi
