@@ -10,3 +10,11 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Default editor
 export EDITOR=nvim
+
+# SSH agent
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+fi
+ssh-add -q ~/.ssh/"$(hostname)" 2>/dev/null
+ssh-add -q ~/.ssh/github 2>/dev/null
+ssh-add -q ~/.ssh/gitlab 2>/dev/null
