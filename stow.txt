@@ -6,3 +6,4 @@ git
 omarchy
 OrcaSlicer
 chrome
+mc
