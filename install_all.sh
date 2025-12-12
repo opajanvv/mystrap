@@ -12,6 +12,7 @@ SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 . "$SCRIPTS_DIR/helpers.sh"
 
 FORCE=false
+OFFLINE=false
 HOST=""
 
 # Parse command line arguments
@@ -21,12 +22,17 @@ while [ $# -gt 0 ]; do
             FORCE=true
             shift
             ;;
+        --offline)
+            OFFLINE=true
+            FORCE=true  # offline implies force (skip update check)
+            shift
+            ;;
         --host)
             HOST="$2"
             shift 2
             ;;
         *)
-            die "Unknown option: $1. Usage: $0 [-f|--force] [--host <hostname>]"
+            die "Unknown option: $1. Usage: $0 [-f|--force] [--offline] [--host <hostname>]"
             ;;
     esac
 done
@@ -38,19 +44,24 @@ fi
 
 log "Detected hostname: $HOST"
 
-# Check for updates
+# Check for updates (unless offline mode)
 HAS_UPDATES=false
 cd "$SCRIPT_DIR"
-git fetch -q || true
-current_head=$(git rev-parse HEAD || echo "")
-remote_head=$(git rev-parse @{u} || echo "")
 
-if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
-    HAS_UPDATES=true
-    log "Pulling latest changes..."
-    git pull || warn "Failed to pull updates, continuing anyway"
+if [ "$OFFLINE" = "true" ]; then
+    log "Offline mode: skipping git fetch/pull"
 else
-    log "Repository is already up to date"
+    git fetch -q || true
+    current_head=$(git rev-parse HEAD || echo "")
+    remote_head=$(git rev-parse @{u} || echo "")
+
+    if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
+        HAS_UPDATES=true
+        log "Pulling latest changes..."
+        git pull || warn "Failed to pull updates, continuing anyway"
+    else
+        log "Repository is already up to date"
+    fi
 fi
 
 # Exit early if no updates and not forced

@@ -14,6 +14,7 @@ This repository is in early development, being built incrementally and tested ac
 ```bash
 ./install_all.sh              # Run full bootstrap (auto-pulls git updates)
 ./install_all.sh --force      # Force re-apply even without updates
+./install_all.sh --offline    # Skip git fetch/pull (implies --force)
 ./install_all.sh --host <name> # Override hostname detection
 ```
 
