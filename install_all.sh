@@ -74,27 +74,31 @@ fi
 log "Starting installation process..."
 
 # 1. Remove unwanted files
-log "Step 1/6: Removing unwanted files..."
+log "Step 1/7: Removing unwanted files..."
 "$SCRIPTS_DIR/remove_files.sh" || die "File removal failed"
 
 # 2. Uninstall packages
-log "Step 2/6: Uninstalling packages..."
+log "Step 2/7: Uninstalling packages..."
 "$SCRIPTS_DIR/uninstall_packages.sh" || die "Packages uninstallation failed"
 
 # 3. Install packages
-log "Step 3/6: Installing packages..."
+log "Step 3/7: Installing packages..."
 "$SCRIPTS_DIR/install_packages.sh" || die "Packages installation failed"
 
 # 4. Install Claude Code
-log "Step 4/6: Installing Claude Code..."
+log "Step 4/7: Installing Claude Code..."
 "$SCRIPTS_DIR/install_claude_code.sh" || die "Claude Code installation failed"
 
-# 5. Install dotfiles
-log "Step 5/6: Installing dotfiles..."
+# 5. Install cron job
+log "Step 5/7: Installing cron job..."
+"$SCRIPTS_DIR/install_cron.sh" || die "Cron job installation failed"
+
+# 6. Install dotfiles
+log "Step 6/7: Installing dotfiles..."
 "$SCRIPTS_DIR/install_dotfiles.sh" || die "Dotfiles installation failed"
 
-# 6. Install Hyprland overrides (host-specific)
-log "Step 6/6: Installing Hyprland overrides..."
+# 7. Install Hyprland overrides (host-specific)
+log "Step 7/7: Installing Hyprland overrides..."
 "$SCRIPTS_DIR/install_overrides.sh" --host "$HOST" || die "Overrides installation failed"
 
 log "Installation complete!"
