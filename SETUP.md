@@ -5,23 +5,26 @@ Checklist for bootstrapping a fresh Omarchy workstation.
 ## Prerequisites
 
 - [ ] Omarchy installed
-- [ ] Network connection
-- [ ] User account created (username: `jan`)
+- [ ] WiFi configured (prompted on first boot)
+- [ ] Omarchy updated (prompted on first boot)
 
 ## Steps
 
 ```sh
-# 1. Clone mystrap
-git clone https://github.com/<user>/mystrap.git ~/dev/mystrap
-cd ~/dev/mystrap
+# 1. Create restore point
+sudo snapper create -d "Fresh Omarchy install"
 
-# 2. Set up passwordless sudo
+# 2. Clone mystrap
+git clone https://github.com/opajanvv/mystrap
+cd mystrap
+
+# 3. Set up passwordless sudo
 sudo ./scripts/setup_passwordless_sudo.sh
 
-# 3. Run bootstrap
+# 4. Run bootstrap
 ./install_all.sh --force
 
-# 4. Set up SSH keys
+# 5. Set up SSH keys
 ./scripts/setup_ssh.sh
 ```
 
