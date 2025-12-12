@@ -18,7 +18,7 @@ if hyprpm list | grep -q "split-monitor-workspaces"; then
     log "Plugin already installed"
 else
     log "Installing split-monitor-workspaces plugin..."
-    hyprpm add "$PLUGIN_URL" || die "Failed to install plugin"
+    yes | hyprpm add "$PLUGIN_URL" || die "Failed to install plugin"
 fi
 
 # Enable plugin
