@@ -1,0 +1,43 @@
+#!/bin/bash
+# Description: Launches a new window for a specified Chrome profile and forces it 
+#              to the current Hyprland workspace to avoid focus-stealing.
+
+# --- Configuration ---
+# The profile folder name (e.g., 'Default', 'Profile 1') must be passed as argument $1
+PROFILE_FOLDER="$1"
+WINDOW_CLASS="Google-chrome"
+
+# Exit if no profile is specified
+if [ -z "$PROFILE_FOLDER" ]; then
+    echo "Error: Profile folder name is required as an argument."
+    exit 1
+fi
+
+# 1. Launch a new window for the specified profile in the background
+google-chrome-stable --profile-directory="$PROFILE_FOLDER" --new-window &
+
+# 2. Dynamic Wait: Check for the new window to appear (Max 1 second wait)
+MAX_TRIES=10
+COUNT=0
+WINDOW_ADDRESS=""
+
+while [ "$COUNT" -lt "$MAX_TRIES" ]; do
+    # Find the address of the newest window matching the class
+    # head -n 1 gets the first (and usually newest) matching window
+    WINDOW_ADDRESS=$(hyprctl clients -j | jq -r ".[] | select(.class == \"$WINDOW_CLASS\") | .address" | head -n 1)
+
+    if [ -n "$WINDOW_ADDRESS" ]; then
+        break
+    fi
+
+    sleep 0.1 # Wait 100ms
+    COUNT=$((COUNT + 1))
+done
+
+# 3. Pull the found window to the current workspace using its unique address
+if [ -n "$WINDOW_ADDRESS" ]; then
+    # Remove the leading '0x' for the dispatch command format
+    CLEAN_ADDRESS=$(echo "$WINDOW_ADDRESS" | sed 's/^0x//')
+    # Use 'address:' to target the specific new window
+    hyprctl dispatch "movetoworkspace current,address:$CLEAN_ADDRESS"
+fi
