@@ -1,6 +1,7 @@
 # Common packages for all workstations
 stow
 cronie
+age
 lynx
 google-chrome
 croc
