@@ -3,7 +3,6 @@
 #
 # Run this once on each new machine to:
 # - Generate machine-specific SSH key
-# - Set up age passphrase for decrypting shared keys
 # - Decrypt shared keys (github, gitlab)
 #
 # Usage: ./scripts/setup_ssh.sh
@@ -17,7 +16,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 MACHINE_NAME=$(hostname)
 MACHINE_KEY="$HOME/.ssh/$MACHINE_NAME"
-PASSPHRASE_FILE="$HOME/.config/mystrap/age-passphrase"
 ENCRYPTED_DIR="$REPO_ROOT/dotfiles/ssh/.ssh/encrypted"
 
 # Generate machine-specific key if missing
@@ -29,23 +27,7 @@ else
     log "Generated: $MACHINE_KEY"
 fi
 
-# Set up age passphrase
-if [ -f "$PASSPHRASE_FILE" ]; then
-    log "Age passphrase already configured"
-else
-    mkdir -p "$(dirname "$PASSPHRASE_FILE")"
-    printf "Enter age passphrase for decrypting shared SSH keys: "
-    stty -echo
-    read -r passphrase
-    stty echo
-    printf "\n"
-
-    echo "$passphrase" > "$PASSPHRASE_FILE"
-    chmod 600 "$PASSPHRASE_FILE"
-    log "Passphrase stored in: $PASSPHRASE_FILE"
-fi
-
-# Decrypt shared keys
+# Decrypt shared keys (age will prompt for passphrase)
 for key in github gitlab; do
     encrypted="$ENCRYPTED_DIR/$key.age"
     target="$HOME/.ssh/$key"
@@ -60,14 +42,12 @@ for key in github gitlab; do
         continue
     fi
 
-    log "Decrypting $key..."
-    age -d -i "$PASSPHRASE_FILE" -o "$target" "$encrypted" 2>/dev/null || \
-        age -d -o "$target" "$encrypted" < "$PASSPHRASE_FILE"
+    log "Decrypting $key (enter passphrase)..."
+    age -d -o "$target" "$encrypted"
     chmod 600 "$target"
-    log "Decrypted: $target"
 done
 
-# Ensure correct permissions on all keys
+# Ensure correct permissions
 chmod 700 "$HOME/.ssh"
 find "$HOME/.ssh" -type f -name "*.pub" -exec chmod 644 {} \;
 find "$HOME/.ssh" -type f ! -name "*.pub" ! -name "known_hosts*" ! -name "config" -exec chmod 600 {} \;

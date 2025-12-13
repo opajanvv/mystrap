@@ -1,41 +1,21 @@
 #!/bin/sh
-# install_ssh.sh - Decrypt and sync shared SSH keys
+# install_ssh.sh - Ensure SSH directory permissions
 #
-# Called by install_all.sh to keep shared keys in sync.
-# Requires setup_ssh.sh to have been run first.
+# Called by install_all.sh after dotfiles are stowed.
+# For key decryption, run setup_ssh.sh manually.
 
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 . "$SCRIPT_DIR/helpers.sh"
 
-PASSPHRASE_FILE="$HOME/.config/mystrap/age-passphrase"
-ENCRYPTED_DIR="$REPO_ROOT/dotfiles/ssh/.ssh/encrypted"
-
-# Skip if setup_ssh.sh hasn't been run
-if [ ! -f "$PASSPHRASE_FILE" ]; then
-    log "Age passphrase not configured (run setup_ssh.sh first)"
-    exit 0
+# Ensure correct permissions if .ssh exists
+if [ -d "$HOME/.ssh" ]; then
+    chmod 700 "$HOME/.ssh"
+    find "$HOME/.ssh" -type f -name "*.pub" -exec chmod 644 {} \;
+    find "$HOME/.ssh" -type f ! -name "*.pub" ! -name "known_hosts*" ! -name "config" -exec chmod 600 {} \; 2>/dev/null || true
+    log "SSH permissions verified"
+else
+    log "SSH directory not found (run setup_ssh.sh after install)"
 fi
-
-# Decrypt shared keys if needed
-for key in github gitlab; do
-    encrypted="$ENCRYPTED_DIR/$key.age"
-    target="$HOME/.ssh/$key"
-
-    if [ ! -f "$encrypted" ]; then
-        continue
-    fi
-
-    # Decrypt if target missing or encrypted is newer
-    if [ ! -f "$target" ] || [ "$encrypted" -nt "$target" ]; then
-        log "Decrypting $key..."
-        age -d -i "$PASSPHRASE_FILE" -o "$target" "$encrypted" 2>/dev/null || \
-            age -d -o "$target" "$encrypted" < "$PASSPHRASE_FILE"
-        chmod 600 "$target"
-    fi
-done
-
-log "SSH keys synced"
