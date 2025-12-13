@@ -21,9 +21,6 @@ dotfiles/ssh/.ssh/
     github.age        # Encrypted private keys
     gitlab.age
 
-~/.config/mystrap/
-  age-passphrase      # Local decryption passphrase
-
 ~/.ssh/
   <hostname>          # Machine-specific key (generated locally)
   <hostname>.pub
@@ -57,7 +54,7 @@ Use the same passphrase for all keys. Commit the `.age` files to the repo.
 4. Update public key: `cp ~/.ssh/github.pub dotfiles/ssh/.ssh/`
 5. Commit and push
 
-Next `install_all.sh` on other machines will decrypt the new key.
+On other machines, delete the old key and run `setup_ssh.sh` to decrypt the new one.
 
 ## Config
 
