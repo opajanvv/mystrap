@@ -31,6 +31,7 @@ sudo ./scripts/setup_passwordless_sudo.sh
 ## Post-setup
 
 - [ ] Add machine's public key to `server:~/.ssh/authorized_keys`
+      (Tip: use Proxmox web UI shell at https://server:8006 to paste the key)
 - [ ] Test SSH: `ssh server`
 - [ ] Re-source shell: `source ~/.bashrc` (or restart terminal)
 
