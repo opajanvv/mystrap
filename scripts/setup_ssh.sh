@@ -42,7 +42,7 @@ for key in github gitlab; do
         continue
     fi
 
-    log "Decrypting $key (enter passphrase)..."
+    log "Decrypting $key (enter age encryption passphrase)..."
     age -d -o "$target" "$encrypted"
     chmod 600 "$target"
 done
