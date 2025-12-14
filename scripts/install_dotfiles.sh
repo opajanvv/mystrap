@@ -21,7 +21,7 @@ stow_package() {
     log "Stowing $package..."
 
     # Try to stow - capture output to detect conflicts
-    stow_output=$(stow -d "$stow_dir" -t "$HOME" --restow "$package" 2>&1) || stow_failed=true
+    stow_output=$(stow -d "$stow_dir" -t "$HOME" --no-folding --restow "$package" 2>&1) || stow_failed=true
 
     # If stow failed, check for conflicts and handle them
     if [ "${stow_failed:-false}" = "true" ]; then
@@ -41,7 +41,7 @@ stow_package() {
 
         # Retry stow after removing conflicts
         log "  Retrying stow for $package..."
-        stow -d "$stow_dir" -t "$HOME" --restow "$package" || warn "Failed to stow $package"
+        stow -d "$stow_dir" -t "$HOME" --no-folding --restow "$package" || warn "Failed to stow $package"
         unset stow_failed
     fi
 }
