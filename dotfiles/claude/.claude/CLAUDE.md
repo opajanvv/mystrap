@@ -1,0 +1,1 @@
+- when running git-commit: if you find changes that I forgot to commit earlier, then do not merge them into the current commit. Check with git diff what has been changed and make a separate commit for it.
