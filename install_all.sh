@@ -44,23 +44,37 @@ fi
 
 log "Detected hostname: $HOST"
 
-# Check for updates (unless offline mode)
+# Sync with remote (unless offline mode)
 HAS_UPDATES=false
 cd "$SCRIPT_DIR"
 
 if [ "$OFFLINE" = "true" ]; then
-    log "Offline mode: skipping git fetch/pull"
+    log "Offline mode: skipping git sync"
 else
+    # Auto-commit local changes (dotfile edits from this machine)
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        log "Local changes detected, auto-committing..."
+        git add -A
+        git commit -m "Auto-sync dotfiles from $HOST"
+    fi
+
+    # Check for remote updates
     git fetch -q || true
     current_head=$(git rev-parse HEAD || echo "")
     remote_head=$(git rev-parse @{u} || echo "")
 
     if [ -n "$current_head" ] && [ -n "$remote_head" ] && [ "$current_head" != "$remote_head" ]; then
         HAS_UPDATES=true
-        log "Pulling latest changes..."
-        git pull || warn "Failed to pull updates, continuing anyway"
+        log "Syncing with remote..."
+        git pull --rebase || warn "Failed to pull updates, continuing anyway"
     else
         log "Repository is already up to date"
+    fi
+
+    # Push local commits (including auto-commits)
+    if git status | grep -q "Your branch is ahead"; then
+        log "Pushing local changes..."
+        git push || warn "Failed to push, will retry next run"
     fi
 fi
 
