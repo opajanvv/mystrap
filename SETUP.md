@@ -26,6 +26,12 @@ sudo ./scripts/setup_passwordless_sudo.sh
 
 # 5. Set up SSH keys
 ./scripts/setup_ssh.sh
+
+# 6. Set up rclone (decrypt config)
+./scripts/setup_rclone.sh
+
+# 7. Set up Google Drive sync (may take hours on first run)
+./scripts/setup_cloud.sh
 ```
 
 ## Post-setup
@@ -37,8 +43,9 @@ sudo ./scripts/setup_passwordless_sudo.sh
 
 ## First Machine Only
 
-If this is the first machine (shared keys don't exist in repo yet):
+If this is the first machine (encrypted secrets don't exist in repo yet):
 
+### SSH Keys
 ```sh
 # Encrypt existing keys with your chosen passphrase
 age -p -o dotfiles/ssh/.ssh/encrypted/github.age ~/.ssh/github
@@ -49,3 +56,17 @@ git add dotfiles/ssh/.ssh/encrypted/
 git commit -m "Add encrypted SSH keys"
 git push
 ```
+
+### Rclone Config
+```sh
+# Encrypt existing rclone config
+age -p -o dotfiles/rclone/.config/rclone/rclone.conf.age ~/.config/rclone/rclone.conf
+
+# Commit and push
+git add dotfiles/rclone/.config/rclone/rclone.conf.age
+git commit -m "Add encrypted rclone config"
+git push
+```
+
+### Google Drive
+Ensure each remote drive has a `RCLONE_TEST` file in its root (required by `--check-access`).
