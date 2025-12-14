@@ -8,3 +8,4 @@ OrcaSlicer
 chrome
 mc
 ssh
+OpenSCAD

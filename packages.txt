@@ -21,3 +21,4 @@ gimp
 systemd
 orca-slicer-bin
 ttf-cascadia-mono-nerd
+openscad
