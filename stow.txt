@@ -9,3 +9,10 @@ chrome
 mc
 ssh
 OpenSCAD
+alacritty
+discord
+fastfetch
+nvim
+rclone
+teamviewer
+walker

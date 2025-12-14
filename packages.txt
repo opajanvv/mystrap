@@ -22,3 +22,6 @@ systemd
 orca-slicer-bin
 ttf-cascadia-mono-nerd
 openscad
+discord
+rclone
+teamviewer
