@@ -16,3 +16,5 @@ nvim
 rclone
 teamviewer
 walker
+claude
+
