@@ -6,7 +6,6 @@ git
 omarchy
 OrcaSlicer
 chrome
-mc
 ssh
 OpenSCAD
 alacritty
