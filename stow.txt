@@ -12,7 +12,6 @@ alacritty
 discord
 fastfetch
 nvim
-rclone
 teamviewer
 walker
 claude
