@@ -26,3 +26,5 @@ discord
 rclone
 teamviewer-bin
 usbutils
+php
+php-gd
