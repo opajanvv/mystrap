@@ -30,8 +30,8 @@ REMOTES="janvv delichtbron penningmeester"
 # Bisync options for cron jobs (ongoing sync)
 BISYNC_OPTS="--check-access --fast-list --drive-skip-gdocs --resilient --recover --max-lock 10m --timeout 5m -MP"
 
-# Extra options for initial sync (more retries, verbose progress)
-RESYNC_OPTS="--retries 5 --retries-sleep 30s --low-level-retries 10 -v"
+# Options for initial sync (no --check-access since local is empty, more retries)
+RESYNC_OPTS="--fast-list --drive-skip-gdocs --resilient --max-lock 10m --timeout 5m -MP --retries 5 --retries-sleep 30s --low-level-retries 10 -v"
 
 # Check rclone is configured
 if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
@@ -72,7 +72,7 @@ for remote in $REMOTES; do
     log "[$remote] If interrupted, re-run this script to resume."
 
     # shellcheck disable=SC2086
-    if ! rclone bisync "drive-$remote:/" "$local_dir" --resync $BISYNC_OPTS $RESYNC_OPTS; then
+    if ! rclone bisync "drive-$remote:/" "$local_dir" --resync $RESYNC_OPTS; then
         warn "[$remote] Initial sync failed or interrupted."
         warn "[$remote] Re-run this script to retry."
         continue
