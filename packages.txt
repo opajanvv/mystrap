@@ -25,3 +25,4 @@ openscad
 discord
 rclone
 teamviewer-bin
+usbutils
