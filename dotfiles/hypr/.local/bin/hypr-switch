@@ -56,28 +56,6 @@ switch_workspaces() {
     hyprctl reload
 }
 
-# Remap windows when switching modes
-remap_windows_to_single() {
-    # Move windows from mon1 workspaces (1-4) to global workspaces 5-8
-    for ws in {1..4}; do
-        hyprctl dispatch focusmonitor 1
-        hyprctl dispatch split-workspace "$ws"
-        local target_ws=$((ws + 4))
-        hyprctl dispatch split-movetoworkspace "$target_ws"
-    done
-}
-
-remap_windows_to_dual() {
-    # Move windows from global workspaces 5-8 back to mon1 workspaces 1-4
-    for ws in {5..8}; do
-        hyprctl dispatch split-workspace "$ws"
-        local target_ws=$((ws - 4))
-        hyprctl dispatch movewindow mon:1
-        hyprctl dispatch focusmonitor 1
-        hyprctl dispatch split-movetoworkspace "$target_ws"
-    done
-}
-
 # Restart UI components
 restart_ui() {
     killall waybar 2>/dev/null || true
@@ -96,7 +74,6 @@ mode_home() {
     echo "Switching to HOME mode (dual monitors)..."
     apply_monitors "$HOME_MONITORS"
     switch_workspaces "dual"
-    [[ -f "$CACHE_FILE" ]] && [[ "$(cat "$CACHE_FILE")" == "laptop" ]] && remap_windows_to_dual
     restart_ui
     echo "home" > "$CACHE_FILE"
 }
@@ -109,9 +86,9 @@ mode_laptop() {
     fi
 
     echo "Switching to LAPTOP mode (single monitor)..."
-    [[ -f "$CACHE_FILE" ]] && [[ "$(cat "$CACHE_FILE")" == "home" ]] && remap_windows_to_single
-    apply_monitors "$LAPTOP_MONITORS"
+    # Switch workspaces FIRST (rebinds ws 5-8 to eDP-1 before disabling HDMI-A-1)
     switch_workspaces "single"
+    apply_monitors "$LAPTOP_MONITORS"
     restart_ui
     echo "laptop" > "$CACHE_FILE"
 }
@@ -124,8 +101,9 @@ mode_presenter() {
     fi
 
     echo "Switching to PRESENTER mode (mirrored)..."
-    apply_monitors "$PRESENTER_MONITORS"
+    # Switch workspaces FIRST (rebinds all ws to eDP-1 before changing monitor config)
     switch_workspaces "single"
+    apply_monitors "$PRESENTER_MONITORS"
     restart_ui
     echo "presenter" > "$CACHE_FILE"
 }
