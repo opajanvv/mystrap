@@ -24,6 +24,7 @@ ttf-cascadia-mono-nerd
 openscad
 discord
 rclone
+syncthing
 teamviewer-bin
 usbutils
 php
