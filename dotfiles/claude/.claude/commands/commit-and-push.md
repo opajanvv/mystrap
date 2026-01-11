@@ -1,6 +1,6 @@
-# Git commit
+# Commit and push
 
-Stage and commit changes with a concise, single-line commit message.
+Stage, commit, and push changes with a concise, single-line commit message.
 
 ## Instructions
 
@@ -13,3 +13,5 @@ Stage and commit changes with a concise, single-line commit message.
    - Then commit the current work
 
 4. Keep each commit focused on one logical change.
+
+5. After committing, push to the remote.

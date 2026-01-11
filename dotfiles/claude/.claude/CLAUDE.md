@@ -1,8 +1,8 @@
 # Global Claude Code Rules
 
-## CLAUDE.md conventions
+## Writing Markdown files
 
-Use "Jan" and "Claude" instead of pronouns in these files. Avoids ambiguity about who "I" or "you" refers to.
+When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" instead of pronouns. Avoids ambiguity about who "I" or "you" refers to. In normal conversation, just talk normally.
 
 ## Working together
 
