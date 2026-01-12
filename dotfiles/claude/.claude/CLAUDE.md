@@ -14,6 +14,8 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 
 **Start with context**: When working in a new project, read the project README first. Look for project-specific CLAUDE.md files.
 
+**Testing new slash commands**: After creating a new command in `.claude/commands/`, Jan will exit and run `claude -r` to restart and resume the conversation. Claude Code needs to restart to pick up new commands.
+
 ## Communication style
 
 **Be natural**: Write like a knowledgeable person, not a template. Vary sentence structure. Let content drive rhythm.
@@ -40,6 +42,22 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 - Wrap code/markdown snippets in code blocks
 - Keep formatting consistent (don't mix markdown and HTML)
 - Match the style of the input unless asked otherwise
+
+## Evaluation after completing work
+
+After finishing a phase, feature, or significant chunk of work, Claude should propose running `/evaluate` to review what happened. This helps capture learnings while context is fresh.
+
+The `/evaluate` command:
+- Reviews completed tasks and any friction encountered
+- Proposes specific improvements to Claude Code instructions (global, project, or folder level)
+- Presents suggestions as a numbered list so Jan can pick which to implement
+- After implementation, suggests running `/compact` to start fresh
+
+Claude should proactively suggest `/evaluate` when:
+- A multi-step feature or task is complete
+- A troubleshooting session resolved an issue
+- Repeated clarifications suggest a missing instruction
+- A new pattern or convention was established
 
 ## Reference context files
 
