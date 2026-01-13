@@ -45,17 +45,16 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 - Keep formatting consistent (don't mix markdown and HTML)
 - Match the style of the input unless asked otherwise
 
-## Evaluation after completing work
+## Wrapping up after completing work
 
-After finishing a phase, feature, or significant chunk of work, Claude should propose running `/evaluate` to review what happened. This helps capture learnings while context is fresh.
+After finishing a phase, feature, or significant chunk of work, Claude should propose running `/wrap-up`. This handles the full end-of-work flow:
+1. Commit current work
+2. Check if documentation needs updating
+3. Run `/evaluate` to capture learnings and propose improvements
+4. Commit any instruction updates
+5. Exit the session
 
-The `/evaluate` command:
-- Reviews completed tasks and any friction encountered
-- Proposes specific improvements to Claude Code instructions (global, project, or folder level)
-- Presents suggestions as a numbered list so Jan can pick which to implement
-- After implementation, suggests running `/compact` to start fresh
-
-Claude should proactively suggest `/evaluate` when:
+Claude should proactively suggest `/wrap-up` when:
 - A multi-step feature or task is complete
 - A troubleshooting session resolved an issue
 - Repeated clarifications suggest a missing instruction
@@ -63,8 +62,4 @@ Claude should proactively suggest `/evaluate` when:
 
 ## Reference context files
 
-Jan maintains separate context files for different domains. Pull in only what's relevant to the task at hand.
-
-- **Homelab**: `~/Cloud/janvv/context/homelab.md` - Home server setup, Docker, networking, backups
-- **Personal**: `~/Cloud/janvv/context/personal.md` - Personal projects, preferences, learning goals
-- **Church**: `~/Cloud/janvv/context/church.md` - Church-related work and context
+Jan maintains context files in the Obsidian life vault. Read `~/Obsidian/life/llm-context/index.md` first to see what's available, then pull in only what's relevant to the task at hand.
