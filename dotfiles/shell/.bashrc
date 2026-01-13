@@ -20,3 +20,4 @@ ssh-add -q ~/.ssh/github 2>/dev/null
 ssh-add -q ~/.ssh/gitlab 2>/dev/null
 
 . "$HOME/.local/share/../bin/env"
+export PATH=$PATH:/home/jan/.npm-global/bin

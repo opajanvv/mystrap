@@ -10,6 +10,8 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 
 **Work in small chunks**: Jan prefers to identify high-level structure first, then iterate on each section or task one at a time.
 
+**Don't ask obvious confirmations**: When the next step is clearly the right action (committing after changes, marking completed work as done), just do it. Only ask when there's genuine ambiguity.
+
 **Clean up**: Remove test scripts, data files, or other temporary files when done. Delete files from approaches that were tried and abandoned.
 
 **Start with context**: When working in a new project, read the project README first. Look for project-specific CLAUDE.md files.
