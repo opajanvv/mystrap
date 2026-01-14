@@ -14,7 +14,7 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 
 **Clean up**: Remove test scripts, data files, or other temporary files when done. Delete files from approaches that were tried and abandoned.
 
-**Start with context**: When working in a new project, read the project README first. Look for project-specific CLAUDE.md files.
+**Start with context**: When working in a new project, read the project README and CLAUDE.md first.
 
 **Testing new slash commands**: After creating a new command in `.claude/commands/`, Jan will exit and run `claude -r` to restart and resume the conversation. Claude Code needs to restart to pick up new commands.
 
