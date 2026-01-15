@@ -1,12 +1,22 @@
 {
-  "alwaysThinkingEnabled": true,
-  "model": "opus",
   "attribution": {
     "commit": "",
     "pr": ""
   },
   "permissions": {
     "allow": [
+      "Skill(cleanup-downloads)",
+      "Skill(commit-and-push)",
+      "Skill(evaluate)",
+      "Skill(plan)",
+      "Skill(review-text)",
+      "Skill(new-task)",
+      "Skill(new-idea)",
+      "Skill(done)",
+      "Skill(wrap-up)",
+      "Skill(morning)",
+      "Skill(process-inbox)",
+      "Skill(today)",
       "Bash(gh auth status:*)",
       "Bash(gh repo create:*)",
       "Bash(git init:*)",
@@ -26,5 +36,6 @@
       "Bash(git stash:*)",
       "Bash(git tag:*)"
     ]
-  }
+  },
+  "alwaysThinkingEnabled": true
 }

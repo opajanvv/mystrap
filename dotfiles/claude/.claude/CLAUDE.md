@@ -38,6 +38,8 @@ When writing or editing Markdown files (like CLAUDE.md), use "Jan" and "Claude" 
 
 **When uncertain**: Ask rather than guess. Only cite verifiable sources.
 
+**When researching frameworks**: When exploring external methodologies (GTD, Teresa Torres, Eisenhower Matrix, etc.), cite sources in the analysis so Jan can verify and explore further.
+
 ## Formatting
 
 - Use bullet points for feedback and summaries
