@@ -29,3 +29,4 @@ teamviewer-bin
 usbutils
 php
 php-gd
+imv
