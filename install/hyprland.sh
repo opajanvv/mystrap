@@ -1,6 +1,5 @@
 #!/bin/sh
 # Post-install script for hyprland
-# Installs and enables split-monitor-workspaces plugin
 # Creates initial workspace configuration symlink
 
 set -eu
@@ -11,19 +10,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log "Updating hyprpm..."
 hyprpm update || warn "Failed to update hyprpm"
-
-# Check if plugin is already added
-PLUGIN_URL="https://github.com/Duckonaut/split-monitor-workspaces"
-if hyprpm list | grep -q "split-monitor-workspaces"; then
-    log "Plugin already installed"
-else
-    log "Installing split-monitor-workspaces plugin..."
-    yes | hyprpm add "$PLUGIN_URL" || die "Failed to install plugin"
-fi
-
-# Enable plugin
-log "Enabling split-monitor-workspaces plugin..."
-hyprpm enable split-monitor-workspaces || warn "Failed to enable plugin"
 
 # Create initial workspaces-current.conf symlink (default to dual mode)
 WS_CURRENT="$HOME/.config/hypr/workspaces-current.conf"
