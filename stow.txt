@@ -15,4 +15,4 @@ nvim
 teamviewer
 walker
 claude
-
+wallpaper
