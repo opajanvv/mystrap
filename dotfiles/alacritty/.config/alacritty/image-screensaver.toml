@@ -1,0 +1,13 @@
+# Transparent input catcher for image screensaver
+[window]
+opacity = 0.0
+padding.x = 0
+padding.y = 0
+decorations = "None"
+
+[colors.primary]
+background = "0x000000"
+
+[colors.cursor]
+cursor = "0x000000"
+text = "0x000000"

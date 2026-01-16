@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Image screensaver using swaybg + transparent Alacritty
+# Displays a random wallpaper and exits on any keypress
+
+WALLPAPER_DIR="${1:-$HOME/Wallpaper}"
+
+# Exit if already running
+pgrep -f "org.jan.image-screensaver" && exit 0
+
+# Check that wallpaper directory has images
+if [[ -z "$(find -L "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | head -1)" ]]; then
+    notify-send "Image screensaver" "No images found in $WALLPAPER_DIR"
+    exit 1
+fi
+
+# Save current wallpaper
+ORIGINAL_BG=$(pgrep -a swaybg | grep -oP '(?<=-i )\S+' | head -1)
+ORIGINAL_BG="${ORIGINAL_BG:-$HOME/.config/omarchy/current/background}"
+
+# Save window addresses and their workspaces to restore later
+WINDOWS_FILE="/tmp/image-screensaver-windows-$$"
+hyprctl clients -j | jq -r '.[] | "\(.address) \(.workspace.id)"' > "$WINDOWS_FILE"
+
+cleanup() {
+    # Restore cursor and blur
+    hyprctl keyword cursor:invisible false &>/dev/null
+    hyprctl keyword decoration:blur:enabled true &>/dev/null
+
+    # Restore original wallpaper
+    pkill swaybg
+    swaybg -i "$ORIGINAL_BG" -m fill &
+    disown
+
+    # Move windows back to their original workspaces
+    if [[ -f "$WINDOWS_FILE" ]]; then
+        while read -r addr workspace; do
+            hyprctl dispatch movetoworkspacesilent "$workspace,address:$addr" &>/dev/null
+        done < "$WINDOWS_FILE"
+        rm -f "$WINDOWS_FILE"
+    fi
+
+    # Kill input catcher terminals
+    pkill -f "org.jan.image-screensaver" 2>/dev/null
+
+    exit 0
+}
+
+trap cleanup SIGINT SIGTERM SIGHUP SIGQUIT EXIT
+
+# Quit Walker if open
+walker -q 2>/dev/null
+
+# Hide cursor and disable blur
+hyprctl keyword cursor:invisible true &>/dev/null
+hyprctl keyword decoration:blur:enabled false &>/dev/null
+
+# Move all windows to special workspace
+while read -r addr; do
+    hyprctl dispatch movetoworkspacesilent "special:screensaver-hide,address:$addr" &>/dev/null
+done < "$WINDOWS_FILE"
+
+# Launch transparent input catcher on each monitor
+focused=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true).name')
+
+for m in $(hyprctl monitors -j | jq -r '.[].name'); do
+    hyprctl dispatch focusmonitor "$m"
+    hyprctl dispatch exec -- alacritty \
+        --class=org.jan.image-screensaver \
+        --config-file ~/.config/alacritty/image-screensaver.toml \
+        -e image-screensaver-cmd
+done
+
+hyprctl dispatch focusmonitor "$focused"
+
+# Small delay for terminals to start
+sleep 0.3
+
+# Cycle through random images every 60 seconds
+CYCLE_INTERVAL=60
+while pgrep -f "org.jan.image-screensaver" >/dev/null; do
+    # Pick a random image
+    SCREENSAVER_IMAGE=$(find -L "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | shuf -n1)
+
+    # Switch wallpaper - start new one before killing old to avoid black flash
+    OLD_SWAYBG=$(pgrep -x swaybg)
+    swaybg -i "$SCREENSAVER_IMAGE" -m fill &
+    NEW_SWAYBG=$!
+    # Wait for new swaybg to fully render
+    sleep 1
+    [[ -n "$OLD_SWAYBG" ]] && kill "$OLD_SWAYBG" 2>/dev/null
+    disown $NEW_SWAYBG 2>/dev/null
+
+    # Wait for cycle interval or until input catcher exits
+    for ((i=0; i<CYCLE_INTERVAL; i++)); do
+        if ! pgrep -f "org.jan.image-screensaver" >/dev/null; then
+            break 2
+        fi
+        sleep 1
+    done
+done
