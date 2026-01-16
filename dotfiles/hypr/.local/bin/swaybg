@@ -1,3 +1,0 @@
-#!/bin/sh
-# No-op replacement for swaybg (uninstalled, but Omarchy defaults still try to run it)
-exit 0
