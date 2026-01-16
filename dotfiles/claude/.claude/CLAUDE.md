@@ -67,78 +67,47 @@ Claude should proactively suggest `/wrap-up` when:
 Jan maintains context files in the Obsidian life vault. Read `~/Obsidian/life/llm-context/index.md` first to see what's available, then pull in only what's relevant to the task at hand.
 
 
-# Using Gemini CLI for Large Codebase Analysis
+# Using Gemini CLI to save Claude context
 
-When analyzing large codebases or multiple files that might exceed context limits, use the Gemini CLI with its massive
-context window. Use `gemini -p` to leverage Google Gemini's large context capacity.
-When you do that, always mention it in your response. Like: 'I used Geminito investigate this file'.
+Claude should proactively use Gemini for simpler tasks to preserve Claude's context for complex work. Claude decides when to delegate to Gemini without asking Jan.
 
-## File and Directory Inclusion Syntax
+## When to use Gemini
 
-Use the `@` syntax to include files and directories in your Gemini prompts. The paths should be relative to WHERE you run the
-  gemini command:
+**Use Gemini for read-only analysis:**
+- Summarizing or categorizing many files at once
+- Finding patterns, duplicates, or inconsistencies across files
+- Answering "what/where/does X exist" questions
+- Reading and summarizing documentation
+- Checking if something is implemented
+- Simple factual questions that don't need conversation context
 
-### Examples:
+**Keep in Claude for:**
+- Multi-step tasks requiring file edits
+- Tasks using tool integrations (git, bash, etc.)
+- Planning and architectural decisions
+- Tasks building on conversation context
+- Complex reasoning and problem-solving
+- Back-and-forth refinement
 
-**Single file analysis:**
-gemini -p "@src/main.py Explain this file's purpose and structure"
+## How to use Gemini
 
-Multiple files:
-gemini -p "@package.json @src/index.js Analyze the dependencies used in the code"
+Use `gemini -p` with `@` syntax to let Gemini read files directly (avoids filling Claude's context):
 
-Entire directory:
-gemini -p "@src/ Summarize the architecture of this codebase"
+```bash
+# Single file
+gemini -p "@src/main.py Explain this file"
 
-Multiple directories:
-gemini -p "@src/ @tests/ Analyze test coverage for the source code"
+# Directory
+gemini -p "@ideas/blog/ Categorize these by theme"
 
-Current directory and subdirectories:
-gemini -p "@./ Give me an overview of this entire project"
+# Multiple paths
+gemini -p "@src/ @tests/ Check test coverage"
+```
 
-# Or use --all_files flag:
-gemini --all_files -p "Analyze the project structure and dependencies"
+Paths are relative to current working directory. Always mention when Gemini was used: "I used Gemini to analyze..."
 
-Implementation Verification Examples
+## Important notes
 
-Check if a feature is implemented:
-gemini -p "@src/ @lib/ Has dark mode been implemented in this codebase? Show me the relevant files and functions"
-
-Verify authentication implementation:
-gemini -p "@src/ @middleware/ Is JWT authentication implemented? List all auth-related endpoints and middleware"
-
-Check for specific patterns:
-gemini -p "@src/ Are there any React hooks that handle WebSocket connections? List them with file paths"
-
-Verify error handling:
-gemini -p "@src/ @api/ Is proper error handling implemented for all API endpoints? Show examples of try-catch blocks"
-
-Check for rate limiting:
-gemini -p "@backend/ @middleware/ Is rate limiting implemented for the API? Show the implementation details"
-
-Verify caching strategy:
-gemini -p "@src/ @lib/ @services/ Is Redis caching implemented? List all cache-related functions and their usage"
-
-Check for specific security measures:
-gemini -p "@src/ @api/ Are SQL injection protections implemented? Show how user inputs are sanitized"
-
-Verify test coverage for features:
-gemini -p "@src/payment/ @tests/ Is the payment processing module fully tested? List all test cases"
-
-When to Use Gemini CLI
-
-Use gemini -p when:
-- Analyzing entire codebases or large directories
-- Comparing multiple large files
-- Need to understand project-wide patterns or architecture
-- Current context window is insufficient for the task
-- Working with files totaling more than 100KB
-- Verifying if specific features, patterns, or security measures are implemented
-- Checking for the presence of certain coding patterns across the entire codebase
-
-Important Notes
-
-- Paths in @ syntax are relative to your current working directory when invoking gemini
-- The CLI will include file contents directly in the context
-- No need for --yolo flag for read-only analysis
-- Gemini's context window can handle entire codebases that would overflow Claude's context
-- When checking implementations, be specific about what you're looking for to get accurate results
+- Gemini has workspace restrictions; run from a directory that contains all needed files
+- Use for read-only analysis; Gemini cannot edit files
+- Be specific in prompts for better results
