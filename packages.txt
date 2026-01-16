@@ -30,3 +30,5 @@ usbutils
 php
 php-gd
 hyprpaper
+imagemagick
+jq
