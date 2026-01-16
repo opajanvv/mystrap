@@ -1,0 +1,3 @@
+# Cloud remotes to sync on this host (one per line)
+# Empty file = no cloud sync
+janvv

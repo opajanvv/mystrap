@@ -24,8 +24,23 @@ CACHE_DIR="$HOME/.cache/rclone"
 BISYNC_STATE_DIR="$CACHE_DIR/bisync"
 MARKER_DIR="$CACHE_DIR/cloud-init"
 
-# Remotes to sync (must match rclone.conf)
-REMOTES="janvv delichtbron penningmeester"
+# Determine which remotes to sync for this host
+HOST=$(hostname)
+HOST_REMOTES_FILE="$REPO_ROOT/hosts/$HOST/cloud-remotes.txt"
+
+if [ -f "$HOST_REMOTES_FILE" ]; then
+    # Read remotes from host-specific config (skip comments and blank lines)
+    REMOTES=$(grep -v '^#' "$HOST_REMOTES_FILE" | grep -v '^$' | tr '\n' ' ' | xargs)
+    if [ -z "$REMOTES" ]; then
+        log "[$HOST] cloud-remotes.txt is empty - no cloud sync configured"
+        exit 0
+    fi
+    log "[$HOST] Using host-specific remotes: $REMOTES"
+else
+    # Default: all remotes
+    REMOTES="janvv delichtbron penningmeester"
+    log "[$HOST] No cloud-remotes.txt found, using defaults: $REMOTES"
+fi
 
 # Bisync options for cron jobs (ongoing sync)
 BISYNC_OPTS="--check-access --fast-list --drive-skip-gdocs --resilient --recover --max-lock 10m --timeout 5m -MP"
