@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Command that runs inside the transparent terminal to catch input
+# Similar to omarchy-cmd-screensaver but simpler
+
+screensaver_in_focus() {
+    hyprctl activewindow -j | jq -e '.class == "org.jan.image-screensaver"' >/dev/null 2>&1
+}
+
+exit_screensaver() {
+    # Signal the launcher to clean up
+    pkill -f "org.jan.image-screensaver" 2>/dev/null
+    exit 0
+}
+
+trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+# Wait for input or focus loss
+while true; do
+    if read -rsn1 -t 1 || ! screensaver_in_focus; then
+        exit_screensaver
+    fi
+done
