@@ -7,7 +7,7 @@ WALLPAPER_DIR="$HOME/Wallpaper"
 CURRENT_BACKGROUND_LINK="$HOME/.config/omarchy/current/background"
 
 # Pick a random image
-NEW_BACKGROUND=$(find "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | shuf -n 1)
+NEW_BACKGROUND=$(find -L "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | shuf -n 1)
 
 if [ -z "$NEW_BACKGROUND" ]; then
     notify-send "No wallpapers found in $WALLPAPER_DIR" -t 2000
