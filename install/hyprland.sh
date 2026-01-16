@@ -11,6 +11,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 log "Updating hyprpm..."
 hyprpm update || warn "Failed to update hyprpm"
 
+# Remove unwanted plugins
+if hyprpm list | grep -q "split-monitor-workspaces"; then
+    log "Removing split-monitor-workspaces plugin..."
+    hyprpm remove split-monitor-workspaces || warn "Failed to remove split-monitor-workspaces"
+fi
+
 # Create initial workspaces-current.conf symlink (default to dual mode)
 WS_CURRENT="$HOME/.config/hypr/workspaces-current.conf"
 WS_DUAL="$HOME/.config/hypr/workspaces-dual.conf"
