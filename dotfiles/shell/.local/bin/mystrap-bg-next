@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+# Set wallpaper to a random image from ~/Wallpaper
+
+WALLPAPER_DIR="$HOME/Wallpaper"
+CURRENT_BACKGROUND_LINK="$HOME/.config/omarchy/current/background"
+
+# Pick a random image
+NEW_BACKGROUND=$(find "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | shuf -n 1)
+
+if [ -z "$NEW_BACKGROUND" ]; then
+    notify-send "No wallpapers found in $WALLPAPER_DIR" -t 2000
+    exit 1
+fi
+
+# Update symlink and restart swaybg
+ln -nsf "$NEW_BACKGROUND" "$CURRENT_BACKGROUND_LINK"
+pkill -x swaybg || true
+setsid uwsm-app -- swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &
