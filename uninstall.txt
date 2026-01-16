@@ -5,3 +5,4 @@ typora
 1password-cli
 1password-beta
 xscreensaver
+hyprpaper
