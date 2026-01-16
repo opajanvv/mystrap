@@ -29,6 +29,6 @@ teamviewer-bin
 usbutils
 php
 php-gd
-hyprpaper
+swww
 imagemagick
 jq

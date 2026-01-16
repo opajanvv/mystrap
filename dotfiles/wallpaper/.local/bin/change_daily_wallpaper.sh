@@ -1,14 +1,28 @@
-#!/bin/bash
-WALLPAPER_DIR=~/Wallpaper
-DAILY=$(date +%Y%m%d).jpg  # Unique filename per day
-IMG=$(find "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" \) | shuf -n1)
+#!/bin/sh
+# Sets a deterministic daily wallpaper based on date
+set -eu
 
-# Resize/fit if needed, save as daily cache
-convert "$IMG" -resize 1920x1080 "$HOME/$DAILY"  # Adjust resolution
+WALLPAPER_DIR="$HOME/Wallpaper"
+CACHE_FILE="$HOME/.cache/daily_wallpaper"
 
-# Set on ALL monitors
-hyprctl hyprpaper preload "$HOME/$DAILY"
-hyprctl hyprpaper wallpaper ",$HOME/$DAILY"  # Comma = all monitors [web:20]
+# Get all images sorted (for deterministic ordering)
+IMAGES=$(find -L "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" \) | sort)
+COUNT=$(echo "$IMAGES" | wc -l)
 
-rm -f ~/.$DAILY.prev  # Cleanup old
-mv "$HOME/$DAILY" ~/.$DAILY.prev 2>/dev/null || true
+if [ "$COUNT" -eq 0 ]; then
+    echo "No wallpapers found in $WALLPAPER_DIR" >&2
+    exit 1
+fi
+
+# Use date as seed for deterministic daily selection
+DAY_NUM=$(date +%j)  # Day of year (1-366)
+YEAR=$(date +%Y)
+INDEX=$(( (DAY_NUM + YEAR) % COUNT + 1 ))
+IMG=$(echo "$IMAGES" | sed -n "${INDEX}p")
+
+# Set wallpaper on all monitors with a fade transition
+swww img "$IMG" --transition-type fade --transition-duration 1
+
+# Cache current wallpaper path for restore after screensaver
+mkdir -p "$(dirname "$CACHE_FILE")"
+echo "$IMG" > "$CACHE_FILE"
