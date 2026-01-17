@@ -1,0 +1,6 @@
+[Unit]
+Description=Clean up old files in Downloads
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'find %h/Downloads -type f -atime +7 -delete && find %h/Downloads -type d -empty -delete'

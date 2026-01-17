@@ -32,3 +32,4 @@ php-gd
 swww
 imagemagick
 jq
+plocate

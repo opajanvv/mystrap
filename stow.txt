@@ -16,3 +16,4 @@ teamviewer
 walker
 claude
 wallpaper
+systemd
