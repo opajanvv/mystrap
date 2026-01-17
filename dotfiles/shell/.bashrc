@@ -11,6 +11,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # Default editor
 export EDITOR=nvim
 
+# Claude Code: trigger auto-compact at 80% context usage
+export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80
+
 # SSH agent
 if [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)" > /dev/null
