@@ -88,35 +88,39 @@ fi
 log "Starting installation process..."
 
 # 1. Remove unwanted files
-log "Step 1/8: Removing unwanted files..."
+log "Step 1/9: Removing unwanted files..."
 "$SCRIPTS_DIR/remove_files.sh" || die "File removal failed"
 
 # 2. Uninstall packages
-log "Step 2/8: Uninstalling packages..."
+log "Step 2/9: Uninstalling packages..."
 "$SCRIPTS_DIR/uninstall_packages.sh" || die "Packages uninstallation failed"
 
 # 3. Install packages
-log "Step 3/8: Installing packages..."
+log "Step 3/9: Installing packages..."
 "$SCRIPTS_DIR/install_packages.sh" || die "Packages installation failed"
 
 # 4. Install Claude Code
-log "Step 4/8: Installing Claude Code..."
+log "Step 4/9: Installing Claude Code..."
 "$SCRIPTS_DIR/install_claude_code.sh" || die "Claude Code installation failed"
 
 # 5. Install cron job
-log "Step 5/8: Installing cron job..."
+log "Step 5/9: Installing cron job..."
 "$SCRIPTS_DIR/install_cron.sh" || die "Cron job installation failed"
 
 # 6. Install dotfiles
-log "Step 6/8: Installing dotfiles..."
+log "Step 6/9: Installing dotfiles..."
 "$SCRIPTS_DIR/install_dotfiles.sh" || die "Dotfiles installation failed"
 
 # 7. Install SSH keys
-log "Step 7/8: Installing SSH keys..."
+log "Step 7/9: Installing SSH keys..."
 "$SCRIPTS_DIR/install_ssh.sh" || die "SSH key installation failed"
 
-# 8. Install Hyprland overrides (host-specific)
-log "Step 8/8: Installing Hyprland overrides..."
+# 8. Enable user systemd services
+log "Step 8/9: Enabling user systemd services..."
+"$SCRIPTS_DIR/install_user_services.sh" || die "User services installation failed"
+
+# 9. Install Hyprland overrides (host-specific)
+log "Step 9/9: Installing Hyprland overrides..."
 "$SCRIPTS_DIR/install_overrides.sh" --host "$HOST" || die "Overrides installation failed"
 
 log "Installation complete!"
