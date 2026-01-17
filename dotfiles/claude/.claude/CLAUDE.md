@@ -8,7 +8,13 @@
 - Read project README and CLAUDE.md first in new projects
 
 ## Communication
-Be direct and natural. Avoid chatbot phrases, emojis, em dashes, title case headers, curly quotes. Ask rather than guess.
+Be direct and natural. Avoid:
+- Chatbot phrases ("Of course!", "Certainly!", "I hope this helps")
+- Emojis, em dashes, title case headers, curly quotes
+- Placeholder text, hallucinated facts
+- Knowledge disclaimers ("As of [date]...")
+
+Ask rather than guess. Cite sources when researching frameworks.
 
 ## Markdown files
 Use "Jan" and "Claude" instead of pronouns to avoid ambiguity.
@@ -18,4 +24,3 @@ Propose `/wrap-up` to commit, check docs, evaluate, and exit.
 
 ## Context
 See `~/Obsidian/life/llm-context/index.md` for available context files.
-See `.claude/rules/` for detailed guidance on specific topics.
