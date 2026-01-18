@@ -1,20 +1,18 @@
 #!/bin/bash
-# Generate DATES.md with pre-calculated dates (week: Sunday-Saturday)
+# Generate dates for Claude context injection (week: Monday-Sunday)
 
+yesterday=$(date -d "-1 day" +%Y-%m-%d)
 today=$(date +%Y-%m-%d)
 tomorrow=$(date -d "+1 day" +%Y-%m-%d)
-dow=$(date +%w)
 
-begin_this_week=$(date -d "-${dow} days" +%Y-%m-%d)
-end_this_week=$(date -d "+$((6 - dow)) days" +%Y-%m-%d)
-begin_next_week=$(date -d "+$((7 - dow)) days" +%Y-%m-%d)
-end_next_week=$(date -d "+$((13 - dow)) days" +%Y-%m-%d)
+# Day of week: Monday=1, Sunday=7
+dow=$(date +%u)
 
-cat > ~/.claude/DATES.md << EOF
-today: ${today}
-tomorrow: ${tomorrow}
-begin of this week: ${begin_this_week}
-end of this week: ${end_this_week}
-begin of next week: ${begin_next_week}
-end of next week: ${end_next_week}
+begin_this_week=$(date -d "-$((dow - 1)) days" +%Y-%m-%d)
+end_this_week=$(date -d "+$((7 - dow)) days" +%Y-%m-%d)
+begin_next_week=$(date -d "+$((8 - dow)) days" +%Y-%m-%d)
+end_next_week=$(date -d "+$((14 - dow)) days" +%Y-%m-%d)
+
+cat << EOF
+Dates: yesterday ${yesterday}, today ${today}, tomorrow ${tomorrow}. This week ${begin_this_week} to ${end_this_week}, next week ${begin_next_week} to ${end_next_week}.
 EOF

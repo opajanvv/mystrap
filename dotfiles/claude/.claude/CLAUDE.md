@@ -25,5 +25,3 @@ Propose `/wrap-up` to commit, check docs, evaluate, and exit.
 
 ## Context
 See `~/Obsidian/life/llm-context/index.md` for available context files.
-
-Pre-calculated dates are in `~/.claude/DATES.md` (generated on session start).
