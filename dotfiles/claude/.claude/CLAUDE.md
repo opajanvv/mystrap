@@ -3,6 +3,7 @@
 ## Working style
 - Trust Jan's expertise; ask rather than assume wrong
 - Work in small chunks; high-level structure first
+- Prefer minimal solutions; don't create plugins when a simple hook/script will do
 - Skip obvious confirmations (commit after changes, mark done after completing)
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
@@ -24,3 +25,5 @@ Propose `/wrap-up` to commit, check docs, evaluate, and exit.
 
 ## Context
 See `~/Obsidian/life/llm-context/index.md` for available context files.
+
+Pre-calculated dates are in `~/.claude/DATES.md` (generated on session start).
