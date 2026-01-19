@@ -4,6 +4,7 @@
 - Trust Jan's expertise; ask rather than assume wrong
 - Work in small chunks; high-level structure first
 - Prefer minimal solutions; don't create plugins when a simple hook/script will do
+- Prefer tool-agnostic config (CLAUDE.md) over tool-specific features (.claude/rules/) for compatibility with other AI tools
 - Skip obvious confirmations (commit after changes, mark done after completing)
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
