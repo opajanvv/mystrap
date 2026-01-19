@@ -38,15 +38,13 @@ stow_package() {
                 if [ -f "$target_path" ] && [ ! -L "$target_path" ]; then
                     log "  Removing conflicting file: $target"
                     rm "$target_path"
-                # Remove absolute symlinks pointing to our dotfiles repo
+                # Remove absolute symlinks pointing to this package in our dotfiles repo
                 elif [ -L "$target_path" ]; then
-                    link_target=$(readlink "$target_path")
+                    link_target=$(readlink "$target_path" 2>/dev/null) || continue
                     case "$link_target" in
-                        /*)  # Absolute symlink
-                            if [ -e "$stow_dir/$package/$target" ] || echo "$link_target" | grep -q "$stow_dir"; then
-                                log "  Removing absolute symlink: $target"
-                                rm "$target_path"
-                            fi
+                        "$stow_dir/$package/"*)  # Absolute symlink to this package
+                            log "  Removing absolute symlink: $target"
+                            rm "$target_path"
                             ;;
                     esac
                 fi
