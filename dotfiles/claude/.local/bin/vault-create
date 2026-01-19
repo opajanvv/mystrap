@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# vault-create - Create a new task or idea from template
+#
+# Usage: vault-create task "description"
+#        vault-create idea "description"
+#
+# Creates file with kebab-case filename, populates from template.
+# Outputs JSON with created file path.
+
+set -euo pipefail
+
+VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Obsidian/life}"
+
+usage() {
+    echo "Usage: vault-create <task|idea> \"description\"" >&2
+    exit 2
+}
+
+# Validate arguments
+if [[ $# -lt 2 ]]; then
+    usage
+fi
+
+type="$1"
+description="$2"
+
+if [[ -z "$description" ]]; then
+    echo '{"error": "Description cannot be empty"}' >&2
+    exit 1
+fi
+
+# Determine template and output directory
+case "$type" in
+    task)
+        template="$VAULT_DIR/templates/task.md"
+        output_dir="$VAULT_DIR/tasks/inbox"
+        ;;
+    idea)
+        template="$VAULT_DIR/templates/idea.md"
+        output_dir="$VAULT_DIR/ideas"
+        ;;
+    *)
+        echo "{\"error\": \"Unknown type: $type. Use 'task' or 'idea'\"}" >&2
+        exit 1
+        ;;
+esac
+
+# Check template exists
+if [[ ! -f "$template" ]]; then
+    echo "{\"error\": \"Template not found: $template\"}" >&2
+    exit 1
+fi
+
+# Convert description to kebab-case filename
+# 1. Lowercase
+# 2. Replace spaces and special chars with hyphens
+# 3. Remove consecutive hyphens
+# 4. Remove leading/trailing hyphens
+filename=$(echo "$description" | \
+    tr '[:upper:]' '[:lower:]' | \
+    sed 's/[^a-z0-9]/-/g' | \
+    sed 's/-\+/-/g' | \
+    sed 's/^-//;s/-$//')
+
+if [[ -z "$filename" ]]; then
+    echo '{"error": "Could not generate valid filename from description"}' >&2
+    exit 1
+fi
+
+output_path="$output_dir/$filename.md"
+rel_path="${output_path#$VAULT_DIR/}"
+
+# Check if file already exists
+if [[ -f "$output_path" ]]; then
+    echo "{\"error\": \"File already exists: $rel_path\"}" >&2
+    exit 1
+fi
+
+# Ensure output directory exists
+mkdir -p "$output_dir"
+
+# Get today's date
+today=$(date +%Y-%m-%d)
+
+# Read template and replace variables
+content=$(<"$template")
+content="${content//\{\{date:YYYY-MM-DD\}\}/$today}"
+content="${content//\{\{title\}\}/$description}"
+
+# Write the file
+echo "$content" > "$output_path"
+
+# Output success JSON
+echo "{\"path\": \"$rel_path\", \"name\": \"$filename\"}"
