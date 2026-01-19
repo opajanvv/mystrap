@@ -25,16 +25,30 @@ stow_package() {
 
     # If stow failed, check for conflicts and handle them
     if [ "${stow_failed:-false}" = "true" ]; then
-        # Parse conflict errors and remove non-symlink files
+        # Parse conflict errors and remove blocking files/symlinks
+        # Format 1: "existing target is not owned by stow: PATH"
+        # Format 2: "existing target PATH since..."
         echo "$stow_output" | grep "existing target" | while IFS= read -r line; do
-            # Extract the target path (format: "...existing target PATH since...")
-            target=$(echo "$line" | sed -n 's/.*existing target \(.*\) since.*/\1/p')
+            # Try both formats
+            target=$(echo "$line" | sed -n 's/.*existing target is not owned by stow: \(.*\)/\1/p')
+            [ -z "$target" ] && target=$(echo "$line" | sed -n 's/.*existing target \(.*\) since.*/\1/p')
             if [ -n "$target" ]; then
                 target_path="$HOME/$target"
-                # Only remove if it's a regular file (not a symlink or directory)
+                # Remove regular files (not symlinks or directories)
                 if [ -f "$target_path" ] && [ ! -L "$target_path" ]; then
                     log "  Removing conflicting file: $target"
                     rm "$target_path"
+                # Remove absolute symlinks pointing to our dotfiles repo
+                elif [ -L "$target_path" ]; then
+                    link_target=$(readlink "$target_path")
+                    case "$link_target" in
+                        /*)  # Absolute symlink
+                            if [ -e "$stow_dir/$package/$target" ] || echo "$link_target" | grep -q "$stow_dir"; then
+                                log "  Removing absolute symlink: $target"
+                                rm "$target_path"
+                            fi
+                            ;;
+                    esac
                 fi
             fi
         done
