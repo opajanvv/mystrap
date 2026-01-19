@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# vault-done - Mark a task as completed
+#
+# Usage: vault-done "task-name"
+#
+# Searches tasks/inbox/ and tasks/active/ for matching files.
+# - If multiple matches: outputs JSON list, exits 1
+# - If single match: moves to tasks/done/, updates frontmatter, outputs JSON
+
+set -euo pipefail
+
+VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Obsidian/life}"
+TASKS_DIR="$VAULT_DIR/tasks"
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage: vault-done <task-name>" >&2
+    exit 2
+fi
+
+query="$1"
+# Remove .md extension if provided
+query="${query%.md}"
+
+# Find matching files in inbox and active
+matches=()
+for dir in "$TASKS_DIR/inbox" "$TASKS_DIR/active"; do
+    if [[ -d "$dir" ]]; then
+        while IFS= read -r -d '' file; do
+            matches+=("$file")
+        done < <(find "$dir" -maxdepth 1 -type f -name "*.md" ! -name "CLAUDE.md" -print0 2>/dev/null | \
+            while IFS= read -r -d '' f; do
+                basename="${f##*/}"
+                basename="${basename%.md}"
+                if [[ "${basename,,}" == *"${query,,}"* ]]; then
+                    printf '%s\0' "$f"
+                fi
+            done)
+    fi
+done
+
+# Handle results
+if [[ ${#matches[@]} -eq 0 ]]; then
+    echo '{"error": "No matching tasks found"}' >&2
+    exit 1
+fi
+
+if [[ ${#matches[@]} -gt 1 ]]; then
+    # Multiple matches - output JSON array for LLM to disambiguate
+    echo -n '{"matches": ['
+    first=true
+    for match in "${matches[@]}"; do
+        if [[ "$first" == true ]]; then
+            first=false
+        else
+            echo -n ', '
+        fi
+        relpath="${match#$VAULT_DIR/}"
+        name="${match##*/}"
+        name="${name%.md}"
+        echo -n "{\"path\": \"$relpath\", \"name\": \"$name\"}"
+    done
+    echo ']}'
+    exit 1
+fi
+
+# Single match - process the task
+old_path="${matches[0]}"
+old_relpath="${old_path#$VAULT_DIR/}"
+filename="${old_path##*/}"
+name="${filename%.md}"
+new_path="$TASKS_DIR/done/$filename"
+new_relpath="tasks/done/$filename"
+today=$(date +%Y-%m-%d)
+
+# Read the file
+content=$(<"$old_path")
+
+# Update frontmatter
+# 1. Change status to done
+content=$(echo "$content" | sed 's/^status: .*/status: done/')
+
+# 2. Add completed date after status line
+if ! echo "$content" | grep -q "^completed:"; then
+    content=$(echo "$content" | sed "/^status: done/a completed: $today")
+fi
+
+# Write to new location
+echo "$content" > "$new_path"
+
+# Remove old file
+rm "$old_path"
+
+# Output success JSON
+echo "{\"old_path\": \"$old_relpath\", \"new_path\": \"$new_relpath\", \"name\": \"$name\"}"

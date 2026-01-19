@@ -33,3 +33,4 @@ swww
 imagemagick
 jq
 plocate
+cursor-bin
