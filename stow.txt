@@ -15,5 +15,6 @@ nvim
 teamviewer
 walker
 claude
+cursor
 wallpaper
 systemd
