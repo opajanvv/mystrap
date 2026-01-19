@@ -32,11 +32,13 @@ cleanup() {
     swaybg -i "$ORIGINAL_BG" -m fill &
     disown
 
-    # Move windows back to their original workspaces
+    # Move windows back to their original workspaces (batched for performance)
     if [[ -f "$WINDOWS_FILE" ]]; then
+        batch_cmd=""
         while read -r addr workspace; do
-            hyprctl dispatch movetoworkspacesilent "$workspace,address:$addr" &>/dev/null
+            batch_cmd+="dispatch movetoworkspacesilent $workspace,address:$addr;"
         done < "$WINDOWS_FILE"
+        [[ -n "$batch_cmd" ]] && hyprctl --batch "$batch_cmd" &>/dev/null
         rm -f "$WINDOWS_FILE"
     fi
 
@@ -55,10 +57,12 @@ walker -q 2>/dev/null
 hyprctl keyword cursor:invisible true &>/dev/null
 hyprctl keyword decoration:blur:enabled false &>/dev/null
 
-# Move all windows to special workspace
-while read -r addr; do
-    hyprctl dispatch movetoworkspacesilent "special:screensaver-hide,address:$addr" &>/dev/null
+# Move all windows to special workspace (batched for performance)
+batch_cmd=""
+while read -r addr _; do
+    batch_cmd+="dispatch movetoworkspacesilent special:screensaver-hide,address:$addr;"
 done < "$WINDOWS_FILE"
+[[ -n "$batch_cmd" ]] && hyprctl --batch "$batch_cmd" &>/dev/null
 
 # Launch transparent input catcher on each monitor
 focused=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true).name')
@@ -79,6 +83,9 @@ sleep 0.3
 # Cycle through random images every 60 seconds
 CYCLE_INTERVAL=60
 while pgrep -f "org.jan.image-screensaver" >/dev/null; do
+    # Exit if hyprlock is running (lock screen activated)
+    pgrep -x hyprlock >/dev/null && break
+
     # Pick a random image
     SCREENSAVER_IMAGE=$(find -L "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | shuf -n1)
 
@@ -96,6 +103,8 @@ while pgrep -f "org.jan.image-screensaver" >/dev/null; do
         if ! pgrep -f "org.jan.image-screensaver" >/dev/null; then
             break 2
         fi
+        # Exit if hyprlock started
+        pgrep -x hyprlock >/dev/null && break 2
         sleep 1
     done
 done
