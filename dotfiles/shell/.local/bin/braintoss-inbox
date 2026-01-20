@@ -1,0 +1,196 @@
+#!/home/jan/.local/share/uv/tools/gcalcli/bin/python
+"""Process Braintoss emails from Gmail and create task files in Obsidian inbox."""
+
+import base64
+import datetime
+import re
+from email.utils import parsedate_to_datetime
+from pathlib import Path
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+CONFIG_DIR = Path.home() / ".config" / "calendar-cli"
+CREDENTIALS_FILE = CONFIG_DIR / "credentials.json"
+TOKEN_FILE = CONFIG_DIR / "token-gmail.json"
+SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
+
+VAULT_PATH = Path.home() / "Obsidian" / "life"
+INBOX_PATH = VAULT_PATH / "tasks" / "inbox"
+
+
+def get_credentials():
+    creds = None
+    if TOKEN_FILE.exists():
+        creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(str(CREDENTIALS_FILE), SCOPES)
+            creds = flow.run_local_server(port=0)
+        TOKEN_FILE.write_text(creds.to_json())
+
+    return creds
+
+
+def clean_subject(subject: str) -> str:
+    """Remove Braintoss prefix and formatting from subject."""
+    # Remove [Braintoss] prefix
+    subject = re.sub(r"^\[Braintoss\]\s*", "", subject, flags=re.IGNORECASE)
+    # Remove markdown bold
+    subject = re.sub(r"\*\*(.+?)\*\*", r"\1", subject)
+    return subject.strip()
+
+
+def clean_body(body: str) -> str:
+    """Remove Braintoss footer boilerplate from body."""
+    # Find where the boilerplate starts
+    markers = [
+        "Want to change how this email looks?",
+        "This email was sent to this address",
+        "© 2026 Braintoss",
+        "&copy;",
+    ]
+    for marker in markers:
+        idx = body.find(marker)
+        if idx != -1:
+            body = body[:idx]
+            break
+    return body.strip()
+
+
+def slugify(text: str) -> str:
+    """Convert text to a filename-safe slug."""
+    text = text.lower().strip()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[-\s]+", "-", text)
+    return text[:50].rstrip("-")
+
+
+def get_message_body(payload: dict) -> str:
+    """Extract plain text body from message payload."""
+    if payload.get("mimeType") == "text/plain":
+        data = payload.get("body", {}).get("data", "")
+        if data:
+            return base64.urlsafe_b64decode(data).decode("utf-8").strip()
+
+    # Handle multipart messages
+    parts = payload.get("parts", [])
+    for part in parts:
+        if part.get("mimeType") == "text/plain":
+            data = part.get("body", {}).get("data", "")
+            if data:
+                return base64.urlsafe_b64decode(data).decode("utf-8").strip()
+        # Recurse into nested parts
+        if part.get("parts"):
+            result = get_message_body(part)
+            if result:
+                return result
+
+    return ""
+
+
+def create_task_file(subject: str, body: str, date: datetime.date) -> Path:
+    """Create a task markdown file in the inbox."""
+    INBOX_PATH.mkdir(parents=True, exist_ok=True)
+
+    slug = slugify(subject) or "untitled"
+    filename = f"{slug}.md"
+    filepath = INBOX_PATH / filename
+
+    # Handle duplicate filenames
+    counter = 1
+    while filepath.exists():
+        filename = f"{slug}-{counter}.md"
+        filepath = INBOX_PATH / filename
+        counter += 1
+
+    frontmatter = f"""---
+status: inbox
+priority: medium
+tags: []
+created: {date.isoformat()}
+---"""
+
+    content = f"{frontmatter}\n\n# {subject}\n"
+    if body:
+        content += f"\n{body}\n"
+
+    filepath.write_text(content)
+    return filepath
+
+
+def process_braintoss_emails():
+    creds = get_credentials()
+    service = build("gmail", "v1", credentials=creds)
+
+    # Find messages with 'braintoss' label
+    # First, get the label ID
+    labels_result = service.users().labels().list(userId="me").execute()
+    labels = labels_result.get("labels", [])
+    braintoss_label = next((l for l in labels if l["name"].lower() == "braintoss"), None)
+
+    if not braintoss_label:
+        print("No 'braintoss' label found in Gmail.")
+        return
+
+    label_id = braintoss_label["id"]
+
+    # Get messages with this label
+    messages_result = service.users().messages().list(
+        userId="me",
+        labelIds=[label_id],
+    ).execute()
+
+    messages = messages_result.get("messages", [])
+
+    if not messages:
+        print("No Braintoss captures to process.")
+        return
+
+    processed = []
+    today = datetime.date.today()
+
+    for msg_info in messages:
+        msg_id = msg_info["id"]
+
+        # Get full message
+        msg = service.users().messages().get(
+            userId="me",
+            id=msg_id,
+            format="full",
+        ).execute()
+
+        # Extract headers
+        headers = {h["name"]: h["value"] for h in msg["payload"].get("headers", [])}
+        subject = clean_subject(headers.get("Subject", "Untitled capture"))
+        date_str = headers.get("Date", "")
+
+        # Parse date or use today
+        try:
+            msg_date = parsedate_to_datetime(date_str).date()
+        except (ValueError, TypeError):
+            msg_date = today
+
+        # Extract body and clean it
+        body = clean_body(get_message_body(msg["payload"]))
+
+        # Create task file
+        filepath = create_task_file(subject, body, msg_date)
+        processed.append(subject)
+
+        # Trash the message (delete requires broader scope)
+        service.users().messages().trash(userId="me", id=msg_id).execute()
+
+    # Output summary
+    print(f"Processed {len(processed)} Braintoss capture(s):")
+    for title in processed:
+        print(f"  - {title}")
+
+
+if __name__ == "__main__":
+    process_braintoss_emails()

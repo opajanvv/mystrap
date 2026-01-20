@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""
+vault-cleanup - Delete completed/killed items from the vault
+
+Usage: vault-cleanup [--dry-run]
+
+Deletes:
+- All files in tasks/done/
+- Projects with status: done
+- Ideas with status: killed or done
+
+Outputs JSON with counts of deleted items.
+Use --dry-run to see what would be deleted without actually deleting.
+"""
+
+import json
+import os
+import sys
+from pathlib import Path
+
+import yaml
+
+
+def get_vault_dir():
+    return Path(os.environ.get("OBSIDIAN_VAULT", os.path.expanduser("~/Obsidian/life")))
+
+
+def parse_frontmatter(content):
+    """Extract YAML frontmatter from markdown file."""
+    if not content.startswith("---"):
+        return {}
+
+    end = content.find("---", 3)
+    if end == -1:
+        return {}
+
+    try:
+        return yaml.safe_load(content[3:end]) or {}
+    except yaml.YAMLError:
+        return {}
+
+
+def cleanup_done_tasks(vault_dir, dry_run):
+    """Delete all files in tasks/done/."""
+    done_dir = vault_dir / "tasks" / "done"
+    deleted = []
+
+    if not done_dir.exists():
+        return deleted
+
+    for f in done_dir.glob("*.md"):
+        deleted.append(str(f.relative_to(vault_dir)))
+        if not dry_run:
+            f.unlink()
+
+    return deleted
+
+
+def cleanup_done_projects(vault_dir, dry_run):
+    """Delete projects with status: done."""
+    projects_dir = vault_dir / "projects"
+    deleted = []
+
+    if not projects_dir.exists():
+        return deleted
+
+    for f in projects_dir.glob("*.md"):
+        content = f.read_text()
+        fm = parse_frontmatter(content)
+
+        if fm.get("status") == "done":
+            deleted.append(str(f.relative_to(vault_dir)))
+            if not dry_run:
+                f.unlink()
+
+    return deleted
+
+
+def cleanup_killed_ideas(vault_dir, dry_run):
+    """Delete ideas with status: killed or done."""
+    ideas_dir = vault_dir / "ideas"
+    deleted = []
+
+    if not ideas_dir.exists():
+        return deleted
+
+    for f in ideas_dir.rglob("*.md"):
+        content = f.read_text()
+        fm = parse_frontmatter(content)
+
+        status = fm.get("status")
+        if status in ("killed", "done"):
+            deleted.append(str(f.relative_to(vault_dir)))
+            if not dry_run:
+                f.unlink()
+
+    return deleted
+
+
+def main():
+    dry_run = "--dry-run" in sys.argv
+    vault_dir = get_vault_dir()
+
+    result = {
+        "dry_run": dry_run,
+        "deleted": {
+            "tasks": cleanup_done_tasks(vault_dir, dry_run),
+            "projects": cleanup_done_projects(vault_dir, dry_run),
+            "ideas": cleanup_killed_ideas(vault_dir, dry_run)
+        }
+    }
+
+    # Add counts for convenience
+    result["counts"] = {
+        "tasks": len(result["deleted"]["tasks"]),
+        "projects": len(result["deleted"]["projects"]),
+        "ideas": len(result["deleted"]["ideas"]),
+        "total": sum(len(v) for v in result["deleted"].values())
+    }
+
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    main()
