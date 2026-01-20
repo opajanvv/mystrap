@@ -1,5 +1,6 @@
 {
   "SKIP_HOST_UPDATE": true,
+  "START_MINIMIZED": true,
   "offloadAdmControls": true,
   "enableHardwareAcceleration": false,
   "chromiumSwitches": {},
