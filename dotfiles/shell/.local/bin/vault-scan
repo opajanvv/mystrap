@@ -172,16 +172,24 @@ def scan_projects(vault_dir):
 def scan_ideas(vault_dir):
     """Scan ideas/ recursively for someday items."""
     ideas_dir = vault_dir / "ideas"
+    today = datetime.now().date()
+    stale_cutoff = today - timedelta(days=90)
 
     result = {
         "someday_count": 0,
-        "random_someday": None
+        "random_someday": None,
+        "unreviewed": {
+            "total": 0,
+            "reviewed": 0,
+            "next": None
+        }
     }
 
     if not ideas_dir.exists():
         return result
 
     someday_ideas = []
+    unreviewed_ideas = []
 
     for f in ideas_dir.rglob("*.md"):
         if f.name == "CLAUDE.md":
@@ -193,16 +201,50 @@ def scan_ideas(vault_dir):
         if fm.get("status") == "someday":
             # Get category from parent folder
             category = f.parent.name if f.parent != ideas_dir else None
-            someday_ideas.append({
+            created = fm.get("created")
+            reviewed = fm.get("reviewed")
+
+            # Convert date objects to strings for JSON
+            if hasattr(created, "isoformat"):
+                created = created.isoformat()
+            if hasattr(reviewed, "isoformat"):
+                reviewed = reviewed.isoformat()
+
+            idea = {
                 "name": f.stem,
                 "path": str(f.relative_to(vault_dir)),
-                "category": category
-            })
+                "category": category,
+                "created": str(created) if created else None
+            }
+
+            someday_ideas.append(idea)
+
+            # Check if needs review (no reviewed date, or reviewed > 90 days ago)
+            needs_review = False
+            if not reviewed:
+                needs_review = True
+            else:
+                try:
+                    reviewed_date = datetime.strptime(str(reviewed), "%Y-%m-%d").date()
+                    if reviewed_date < stale_cutoff:
+                        needs_review = True
+                except ValueError:
+                    needs_review = True
+
+            if needs_review:
+                unreviewed_ideas.append(idea)
 
     result["someday_count"] = len(someday_ideas)
 
     if someday_ideas:
         result["random_someday"] = random.choice(someday_ideas)
+
+    # Sort unreviewed by category (uncategorized last), then by created date (oldest first)
+    unreviewed_ideas.sort(key=lambda x: (x["category"] or "zzz", x["created"] or ""))
+
+    result["unreviewed"]["total"] = len(someday_ideas)
+    result["unreviewed"]["reviewed"] = len(someday_ideas) - len(unreviewed_ideas)
+    result["unreviewed"]["items"] = unreviewed_ideas
 
     return result
 
