@@ -24,5 +24,3 @@ Use "Jan" and "Claude" instead of pronouns to avoid ambiguity.
 ## After significant work
 Propose `/wrap-up` to commit, check docs, evaluate, and exit.
 
-## Context
-See `~/Obsidian/life/llm-context/index.md` for available context files.
