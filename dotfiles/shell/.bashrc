@@ -51,5 +51,5 @@ claude-opus() {
     # We 'unset' the API key variables for this command execution
     # so Claude Code is forced to use your browser-based login.
     env -u ANTHROPIC_API_KEY -u ANTHROPIC_BASE_URL \
-        claude --model claude-3-opus-latest
+        claude --model opus
 }
