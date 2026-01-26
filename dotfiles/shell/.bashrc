@@ -24,3 +24,32 @@ ssh-add -q ~/.ssh/gitlab 2>/dev/null
 
 . "$HOME/.local/share/../bin/env"
 export PATH=$PATH:/home/jan/.npm-global/bin
+
+
+# --- Claude Code "Switcher" Functions ---
+
+# 1. The Builder (Z.ai / GLM-4.7)
+# This explicitly sets the Base URL and Key just for this command.
+claude-glm() {
+    # Read the key from your .env file
+    local ZAI_KEY=$(grep 'ZAI_PROXY_KEY' ~/.env | cut -d '"' -f 2)
+    
+    echo "🚀 Starting GLM-4.7 (Builder Mode via Z.ai)"
+    
+    # Run claude with temporary environment variables
+    # We use 'env' to ensure they don't leak into your current shell
+    env ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
+        ANTHROPIC_API_KEY="$ZAI_KEY" \
+        claude --model glm-4.7
+}
+
+# 2. The Supervisor (Official Anthropic / Subscription)
+# This ensures any stray API keys are hidden so it falls back to your login.
+claude-opus() {
+    echo "⚖️ Starting Opus 4.5 (Supervisor Mode / Subscription)"
+    
+    # We 'unset' the API key variables for this command execution
+    # so Claude Code is forced to use your browser-based login.
+    env -u ANTHROPIC_API_KEY -u ANTHROPIC_BASE_URL \
+        claude --model claude-3-opus-latest
+}
