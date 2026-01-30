@@ -47,9 +47,28 @@ claude-glm() {
 # This ensures any stray API keys are hidden so it falls back to your login.
 claude-opus() {
     echo "⚖️ Starting Opus 4.5 (Supervisor Mode / Subscription)"
-    
+
     # We 'unset' the API key variables for this command execution
     # so Claude Code is forced to use your browser-based login.
     env -u ANTHROPIC_API_KEY -u ANTHROPIC_BASE_URL \
         claude --model opus
+}
+
+# 3. Local Ollama (via litellm proxy)
+# Start litellm first: litellm --model ollama/llama3 --port 11435
+claude-local() {
+    echo "🏠 Starting Claude Code (Local Ollama via litellm)"
+
+    env ANTHROPIC_BASE_URL="http://localhost:11435/v1" \
+        ANTHROPIC_API_KEY="dummy" \
+        claude
+}
+
+# 4. Home Ollama (remote, needs proxy setup)
+claude-home() {
+    echo "🏠 Starting Claude Code (Home Ollama)"
+
+    env ANTHROPIC_BASE_URL="https://ollama.janvv.nl/v1" \
+        ANTHROPIC_API_KEY="dummy" \
+        claude
 }
