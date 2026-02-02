@@ -1,8 +1,3 @@
----
-description: mystrap bootstrap system coding standards and conventions
-alwaysApply: true
----
-
 # mystrap
 
 Personal implementation of the JanStrap framework (from template repository `opajanvv/janstrap`). JanStrap is an idempotent bootstrap system for Omarchy (Arch Linux) workstations that automates package installation, dotfile management, and host-specific configurations.
@@ -139,3 +134,14 @@ This codebase follows a **ruthless simplification** approach:
 - Create `hosts/<hostname>/dotfiles/` for host-specific dotfile packages
 - Use `hostname` command to detect current host
 - Currently configured hosts: `laptop1`, `laptop2`
+
+## Testing
+
+Run `./install_all.sh --offline` and analyze the output.
+
+Report whether the installation completed successfully or not. Look for:
+- Any `[WARN]` or `[ERROR]` messages
+- Any "failed" or "aborted" messages
+- Exit code
+
+If there are failures or warnings, explain what went wrong and suggest a fix.

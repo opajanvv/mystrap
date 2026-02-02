@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# vault-done - Mark a task as completed
+# vault-done - Complete and delete a task
 #
 # Usage: vault-done "task-name"
 #
 # Searches tasks/inbox/ and tasks/active/ for matching files.
 # - If multiple matches: outputs JSON list, exits 1
-# - If single match: moves to tasks/done/, updates frontmatter, outputs JSON
+# - If single match: deletes the file, outputs JSON
 
 set -euo pipefail
 
@@ -64,32 +64,14 @@ if [[ ${#matches[@]} -gt 1 ]]; then
     exit 1
 fi
 
-# Single match - process the task
-old_path="${matches[0]}"
-old_relpath="${old_path#$VAULT_DIR/}"
-filename="${old_path##*/}"
+# Single match - delete the task
+task_path="${matches[0]}"
+relpath="${task_path#$VAULT_DIR/}"
+filename="${task_path##*/}"
 name="${filename%.md}"
-new_path="$TASKS_DIR/done/$filename"
-new_relpath="tasks/done/$filename"
-today=$(date +%Y-%m-%d)
 
-# Read the file
-content=$(<"$old_path")
-
-# Update frontmatter
-# 1. Change status to done
-content=$(echo "$content" | sed 's/^status: .*/status: done/')
-
-# 2. Add completed date after status line
-if ! echo "$content" | grep -q "^completed:"; then
-    content=$(echo "$content" | sed "/^status: done/a completed: $today")
-fi
-
-# Write to new location
-echo "$content" > "$new_path"
-
-# Remove old file
-rm "$old_path"
+# Delete the file
+rm "$task_path"
 
 # Output success JSON
-echo "{\"old_path\": \"$old_relpath\", \"new_path\": \"$new_relpath\", \"name\": \"$name\"}"
+echo "{\"deleted\": \"$relpath\", \"name\": \"$name\"}"
