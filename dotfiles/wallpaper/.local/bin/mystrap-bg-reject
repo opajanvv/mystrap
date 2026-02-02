@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+# Reject current wallpaper: move to rejected/ folder and pick a new one
+
+WALLPAPER_DIR="$HOME/Wallpaper"
+REJECTED_DIR="$WALLPAPER_DIR/rejected"
+CURRENT_BACKGROUND_LINK="$HOME/.config/omarchy/current/background"
+
+# Get current wallpaper path (resolve symlink)
+CURRENT_BACKGROUND=$(readlink -f "$CURRENT_BACKGROUND_LINK")
+
+if [ -z "$CURRENT_BACKGROUND" ]; then
+    notify-send "No current wallpaper found" -t 2000
+    exit 1
+fi
+
+# Create rejected directory if it doesn't exist
+mkdir -p "$REJECTED_DIR"
+
+# Move current wallpaper to rejected folder
+mv "$CURRENT_BACKGROUND" "$REJECTED_DIR/"
+
+# Notify user
+BASENAME=$(basename "$CURRENT_BACKGROUND")
+notify-send "Wallpaper rejected" "$BASENAME moved to rejected/" -t 2000
+
+# Pick a new wallpaper by calling mystrap-bg-next
+exec ~/.local/bin/mystrap-bg-next
