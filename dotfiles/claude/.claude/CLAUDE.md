@@ -8,6 +8,7 @@
 - Skip obvious confirmations (commit after changes, mark done after completing)
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
+- Create scripts in `~/dev/mystrap/dotfiles/shell/`, not `~/.local/bin/` (symlinks go in `~/.local/bin/`)
 
 ## Communication
 Be direct and natural. Avoid:
