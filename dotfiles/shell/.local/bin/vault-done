@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life/planning}"
+VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life}"
 TASKS_DIR="$VAULT_DIR/tasks"
 
 if [[ $# -lt 1 ]]; then

@@ -5,7 +5,7 @@
 export PATH="$HOME/.local/bin:$PATH"
 set -e
 
-VAULT_DIR="$HOME/Cloud/janvv/life/planning"
+VAULT_DIR="$HOME/Cloud/janvv/life"
 TODAY_FILE="$VAULT_DIR/TODAY.md"
 DATE=$(date +%Y-%m-%d)
 

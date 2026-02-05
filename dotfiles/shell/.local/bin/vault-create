@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life/planning}"
+VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life}"
 
 usage() {
     echo "Usage: vault-create <task|idea> \"description\"" >&2
