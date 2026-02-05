@@ -23,5 +23,5 @@ Ask rather than guess. Cite sources when researching frameworks.
 Use "Jan" and "Claude" instead of pronouns to avoid ambiguity.
 
 ## After significant work
-Propose `/wrap-up` to commit, check docs, evaluate, and exit.
+Propose `/evaluate` to reflect on the session and improve instructions.
 
