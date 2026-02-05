@@ -10,7 +10,7 @@ Run these steps in order:
 
 2. **Documentation check**: Review if any documentation needs updating based on the work done (READMEs, docs, context files). Update if needed.
 
-3. **Evaluate**: Run `/evaluate` to review what happened, capture learnings, and propose improvements to Claude Code instructions.
+3. **Evaluate**: Run the evaluate skill to review what happened, capture learnings, and propose improvements to CLAUDE.md instructions.
 
 4. **Commit improvements**: After evaluation changes are made, run `/commit-and-push` again to commit any instruction updates.
 
