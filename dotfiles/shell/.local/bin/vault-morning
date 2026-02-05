@@ -5,7 +5,7 @@
 export PATH="$HOME/.local/bin:$PATH"
 set -e
 
-VAULT_DIR="$HOME/Obsidian/life"
+VAULT_DIR="$HOME/Cloud/janvv/life/planning"
 TODAY_FILE="$VAULT_DIR/TODAY.md"
 DATE=$(date +%Y-%m-%d)
 
@@ -23,16 +23,5 @@ echo "Cleaned up $cleanup_count items"
 
 # Step 3: Generate TODAY.md
 vault-today
-
-# Step 5: Commit and push
-echo "Committing and pushing..."
-git add -A
-if git diff --staged --quiet; then
-  echo "No changes to commit"
-else
-  git commit -m "morning: $DATE"
-  git push
-  echo "Pushed to remote"
-fi
 
 echo "Morning routine complete."

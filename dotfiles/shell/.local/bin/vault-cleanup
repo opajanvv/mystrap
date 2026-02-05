@@ -22,7 +22,7 @@ import yaml
 
 
 def get_vault_dir():
-    return Path(os.environ.get("OBSIDIAN_VAULT", os.path.expanduser("~/Obsidian/life")))
+    return Path(os.environ.get("OBSIDIAN_VAULT", os.path.expanduser("~/Cloud/janvv/life/planning")))
 
 
 def parse_frontmatter(content):
