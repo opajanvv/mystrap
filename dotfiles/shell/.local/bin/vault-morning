@@ -2,6 +2,7 @@
 # vault-morning: Generate morning routine without LLM
 # Replaces: claude -p "/morning"
 
+export PATH="$HOME/.local/bin:$PATH"
 set -e
 
 VAULT_DIR="$HOME/Obsidian/life"
