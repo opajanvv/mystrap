@@ -4,6 +4,7 @@ hypr
 shell
 git
 omarchy
+claude
 OrcaSlicer
 chrome
 ssh
