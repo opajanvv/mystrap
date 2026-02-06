@@ -3,6 +3,7 @@
 
 import base64
 import datetime
+import os
 import re
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -17,7 +18,7 @@ CREDENTIALS_FILE = CONFIG_DIR / "credentials.json"
 TOKEN_FILE = CONFIG_DIR / "token-gmail.json"
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 
-VAULT_PATH = Path.home() / "Obsidian" / "life"
+VAULT_PATH = Path(os.environ.get("OBSIDIAN_VAULT", os.path.expanduser("~/Cloud/janvv/life/planning")))
 INBOX_PATH = VAULT_PATH / "tasks" / "inbox"
 
 

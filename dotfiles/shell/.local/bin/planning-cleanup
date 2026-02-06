@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""
+planning-cleanup - Archive done/killed items and purge old archives
+
+Usage: planning-cleanup [--dry-run]
+
+Two phases:
+  1. Archive: Move done/killed items from tasks/, projects/, ideas/ to .archive/
+  2. Purge: Delete archived items older than 4 weeks
+
+Outputs JSON with archived and purged items.
+Use --dry-run to preview without changes.
+"""
+
+import json
+import os
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import yaml
+
+
+def get_vault_dir():
+    return Path(os.environ.get("OBSIDIAN_VAULT", os.path.expanduser("~/Cloud/janvv/life/planning")))
+
+
+def parse_frontmatter(content):
+    """Extract YAML frontmatter from markdown file."""
+    if not content.startswith("---"):
+        return {}
+
+    end = content.find("---", 3)
+    if end == -1:
+        return {}
+
+    try:
+        return yaml.safe_load(content[3:end]) or {}
+    except yaml.YAMLError:
+        return {}
+
+
+def add_frontmatter_field(content, field, value):
+    """Add a field to existing YAML frontmatter."""
+    if not content.startswith("---"):
+        return content
+
+    end = content.find("---", 3)
+    if end == -1:
+        return content
+
+    fm_text = content[3:end]
+    new_fm = fm_text.rstrip("\n") + f"\n{field}: {value}\n"
+    return "---" + new_fm + content[end:]
+
+
+def unique_path(target):
+    """Return target path, adding -2, -3 etc. suffix if it already exists."""
+    if not target.exists():
+        return target
+
+    stem = target.stem
+    suffix = target.suffix
+    parent = target.parent
+    counter = 2
+
+    while True:
+        candidate = parent / f"{stem}-{counter}{suffix}"
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+def find_done_killed(vault_dir):
+    """Find all done/killed items across tasks, projects, ideas."""
+    items = []
+
+    # Tasks: inbox and active
+    for subdir in ["tasks/inbox", "tasks/active"]:
+        d = vault_dir / subdir
+        if not d.exists():
+            continue
+        for f in d.glob("*.md"):
+            if f.name == "CLAUDE.md":
+                continue
+            content = f.read_text()
+            fm = parse_frontmatter(content)
+            if fm.get("status") in ("done", "killed"):
+                items.append(("tasks", f))
+
+    # Projects
+    projects_dir = vault_dir / "projects"
+    if projects_dir.exists():
+        for f in projects_dir.glob("*.md"):
+            if f.name == "CLAUDE.md":
+                continue
+            content = f.read_text()
+            fm = parse_frontmatter(content)
+            if fm.get("status") in ("done", "killed"):
+                items.append(("projects", f))
+
+    # Ideas (recursive, flatten subdirs)
+    ideas_dir = vault_dir / "ideas"
+    if ideas_dir.exists():
+        for f in ideas_dir.rglob("*.md"):
+            if f.name == "CLAUDE.md":
+                continue
+            content = f.read_text()
+            fm = parse_frontmatter(content)
+            if fm.get("status") in ("done", "killed"):
+                items.append(("ideas", f))
+
+    return items
+
+
+def archive_items(vault_dir, items, dry_run):
+    """Move items to .archive/ with archived date in frontmatter."""
+    archive_dir = vault_dir / ".archive"
+    today = datetime.now().strftime("%Y-%m-%d")
+    archived = {"tasks": [], "projects": [], "ideas": []}
+
+    for category, filepath in items:
+        target_dir = archive_dir / category
+        target = unique_path(target_dir / filepath.name)
+        rel_source = str(filepath.relative_to(vault_dir))
+        rel_target = str(target.relative_to(vault_dir))
+
+        archived[category].append({"from": rel_source, "to": rel_target})
+
+        if not dry_run:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            content = filepath.read_text()
+            content = add_frontmatter_field(content, "archived", today)
+            target.write_text(content)
+            filepath.unlink()
+
+    return archived
+
+
+def purge_old_archives(vault_dir, dry_run):
+    """Delete archived files older than 4 weeks."""
+    archive_dir = vault_dir / ".archive"
+    cutoff = datetime.now().date() - timedelta(weeks=4)
+    purged = {"tasks": [], "projects": [], "ideas": []}
+
+    if not archive_dir.exists():
+        return purged
+
+    for category in ("tasks", "projects", "ideas"):
+        cat_dir = archive_dir / category
+        if not cat_dir.exists():
+            continue
+
+        for f in cat_dir.glob("*.md"):
+            content = f.read_text()
+            fm = parse_frontmatter(content)
+            archived_date = fm.get("archived")
+
+            if not archived_date:
+                continue
+
+            try:
+                if hasattr(archived_date, "isoformat"):
+                    ad = archived_date
+                else:
+                    ad = datetime.strptime(str(archived_date), "%Y-%m-%d").date()
+
+                if ad <= cutoff:
+                    purged[category].append(str(f.relative_to(vault_dir)))
+                    if not dry_run:
+                        f.unlink()
+            except (ValueError, TypeError):
+                continue
+
+    return purged
+
+
+def main():
+    dry_run = "--dry-run" in sys.argv
+    vault_dir = get_vault_dir()
+
+    items = find_done_killed(vault_dir)
+    archived = archive_items(vault_dir, items, dry_run)
+    purged = purge_old_archives(vault_dir, dry_run)
+
+    archived_count = sum(len(v) for v in archived.values())
+    purged_count = sum(len(v) for v in purged.values())
+
+    result = {
+        "dry_run": dry_run,
+        "archived": archived,
+        "purged": purged,
+        "counts": {
+            "archived": archived_count,
+            "purged": purged_count
+        }
+    }
+
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    main()

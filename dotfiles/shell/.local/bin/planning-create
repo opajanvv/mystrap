@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
-# vault-create - Create a new task or idea from template
+# planning-create - Create a new task or idea from template
 #
-# Usage: vault-create task "description"
-#        vault-create idea "description"
+# Usage: planning-create task "description"
+#        planning-create idea "description"
 #
 # Creates file with kebab-case filename, populates from template.
 # Outputs JSON with created file path.
 
 set -euo pipefail
 
-VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life}"
+VAULT_DIR="${OBSIDIAN_VAULT:-$HOME/Cloud/janvv/life/planning}"
 
 usage() {
     echo "Usage: vault-create <task|idea> \"description\"" >&2

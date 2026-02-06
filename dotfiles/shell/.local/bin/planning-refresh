@@ -1,25 +1,35 @@
 #!/bin/bash
-# vault-today: Generate TODAY.md overview
-# Extracted from vault-morning for standalone use
+# planning-refresh: Process inbox, clean up, and generate TODAY.md
+# Runs hourly via cron. Can also be run manually for an immediate refresh.
 
+export PATH="$HOME/.local/bin:$PATH"
 set -e
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 VAULT_DIR="$HOME/Cloud/janvv/life"
-TODAY_FILE="$VAULT_DIR/TODAY.md"
+TODAY_FILE="$VAULT_DIR/planning/TODAY.md"
 DATE=$(date +%Y-%m-%d)
 
 cd "$VAULT_DIR"
 
-# Gather data
+# Step 1: Process Braintoss inbox
+echo "Processing Braintoss inbox..."
+braintoss-inbox || echo "braintoss-inbox failed or not available"
+
+# Step 2: Archive done/killed items, purge old archives
+echo "Archiving completed items..."
+cleanup_result=$(python3 "$SCRIPT_DIR/planning-cleanup" 2>/dev/null || echo '{"counts":{"archived":0,"purged":0}}')
+archived=$(echo "$cleanup_result" | jq -r '.counts.archived // 0')
+purged=$(echo "$cleanup_result" | jq -r '.counts.purged // 0')
+echo "Archived $archived items, purged $purged items"
+
+# Step 3: Generate TODAY.md
 echo "Gathering vault data..."
-vault_json=$(vault-scan)
+vault_json=$(planning-scan)
 calendar=$(calendar-today 2>/dev/null || echo "")
 tasks=$(tasks-today 2>/dev/null || echo "")
 
-# Generate TODAY.md using jq
 echo "Generating TODAY.md..."
-
-# Build the markdown using jq
 today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg calendar "$calendar" --arg tasks "$tasks" '
 # Capture target name for later use
 (.projects.target.name // "") as $target_name |
@@ -105,6 +115,7 @@ today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg calendar "$calend
 )
 ')
 
-# Write TODAY.md
 echo "$today_md" > "$TODAY_FILE"
 echo "Generated $TODAY_FILE"
+
+echo "Done."

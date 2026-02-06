@@ -8,7 +8,7 @@
 - Skip obvious confirmations (commit after changes, mark done after completing)
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
-- Create scripts in `~/dev/mystrap/dotfiles/shell/`, not `~/.local/bin/` (symlinks go in `~/.local/bin/`)
+- Create scripts in `~/dev/mystrap/dotfiles/shell/.local/bin/`, not `~/.local/bin/` (symlinks go in `~/.local/bin/`)
 
 ## Communication
 Be direct and natural. Avoid:
@@ -21,6 +21,25 @@ Ask rather than guess. Cite sources when researching frameworks.
 
 ## Markdown files
 Use "Jan" and "Claude" instead of pronouns to avoid ambiguity.
+
+## Context on-demand
+This CLAUDE.md is intentionally concise. For detailed knowledge:
+- Read `~/Cloud/janvv/life/llm-context/index.md` to see available context
+- Follow links only when relevant to the current task
+
+## Vault structure
+Most work happens in `~/Cloud/janvv/life/` with separate workspaces:
+- **planning/** - Projects, tasks, ideas, daily overview (Claude Code root)
+- **docs/** - Technical documentation, homelab (Claude Code root)
+- **llm-context/** - Context summaries for Claude
+
+Each subdirectory has its own CLAUDE.md with specific instructions. Work in the appropriate folder.
+
+## External integrations
+- **Mystrap**: `~/dev/mystrap` is the dotfiles repository. Uses stow, so scripts go in `dotfiles/shell/.local/bin/`.
+- **Vault scripts**: `~/.local/bin/vault-*` scripts for scanning, cleanup, creating tasks, and TODAY.md generation
+- **Calendar**: `~/.local/bin/calendar-today` fetches Google Calendar events (see `llm-context/google-api.md`)
+- **Homelab**: `~/dev/homelab-docker` contains Docker Compose files
 
 ## After significant work
 Propose `/evaluate` to reflect on the session and improve instructions.

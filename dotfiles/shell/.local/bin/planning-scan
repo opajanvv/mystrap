@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-vault-scan - Scan Obsidian vault and output structured JSON
+planning-scan - Scan planning workspace and output structured JSON
 
-Usage: vault-scan
+Usage: planning-scan
 
 Scans tasks, projects, and ideas folders and outputs JSON for use by
-Claude Code commands like /today and /process-inbox.
+Claude Code commands like /refresh-planning and /process-inbox.
 """
 
 import json
@@ -59,6 +59,10 @@ def scan_inbox(vault_dir):
     for f in inbox_dir.glob("*.md"):
         if f.name == "CLAUDE.md":
             continue
+        content = f.read_text()
+        fm = parse_frontmatter(content)
+        if fm.get("status") in ("done", "killed"):
+            continue
         items.append({
             "name": f.stem,
             "path": str(f.relative_to(vault_dir))
@@ -90,6 +94,9 @@ def scan_active_tasks(vault_dir, today):
 
         content = f.read_text()
         fm = parse_frontmatter(content)
+
+        if fm.get("status") in ("done", "killed"):
+            continue
 
         task = {
             "name": f.stem,
@@ -144,6 +151,9 @@ def scan_projects(vault_dir):
 
         content = f.read_text()
         fm = parse_frontmatter(content)
+
+        if fm.get("status") in ("done", "killed"):
+            continue
 
         unchecked = get_unchecked_items(content)
 
