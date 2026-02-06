@@ -41,6 +41,10 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 - **Calendar**: `~/.local/bin/calendar-today` fetches Google Calendar events (see `llm-context/google-api.md`)
 - **Homelab**: `~/dev/homelab-docker` contains Docker Compose files
 
+## Git commits
+- Never run git commit directly. Always use the auto-committer agent via the Task tool.
+- Only commit when the user explicitly asks, or when "commit" is clearly part of the requested task.
+
 ## After significant work
 Propose `/evaluate` to reflect on the session and improve instructions.
 
