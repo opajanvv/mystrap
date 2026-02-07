@@ -6,6 +6,7 @@
 - Prefer minimal solutions; don't create plugins when a simple hook/script will do
 - Prefer tool-agnostic config (CLAUDE.md) over tool-specific features (.claude/rules/) for compatibility with other AI tools
 - Skip obvious confirmations (commit after changes, mark done after completing)
+- Use task tracking for 5+ steps or complex dependencies; skip for straightforward sequential work
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
 - Create scripts in `~/dev/mystrap/dotfiles/shell/.local/bin/`, not `~/.local/bin/` (symlinks go in `~/.local/bin/`)
