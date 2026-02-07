@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+
+# Sync homelab docs from vault to website repo
+# Usage: vault-sync-homelab
+
+VAULT_SRC="$HOME/Cloud/janvv/life/docs/homelab"
+WEBSITE_DST="$HOME/dev/homelab-website/content"
+
+if [ ! -d "$VAULT_SRC" ]; then
+    echo "Error: Vault source not found: $VAULT_SRC"
+    exit 1
+fi
+
+if [ ! -d "$WEBSITE_DST" ]; then
+    echo "Error: Website destination not found: $WEBSITE_DST"
+    exit 1
+fi
+
+echo "Syncing homelab docs from vault to website..."
+rsync -av --delete \
+    --exclude='.obsidian' \
+    --exclude='private' \
+    --exclude='templates' \
+    "$VAULT_SRC/" "$WEBSITE_DST/"
+
+echo "✓ Sync complete"

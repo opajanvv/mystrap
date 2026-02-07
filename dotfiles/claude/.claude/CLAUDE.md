@@ -9,6 +9,7 @@
 - Use task tracking for 5+ steps or complex dependencies; skip for straightforward sequential work
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
+- When creating files for other agents (specs, plans, todos), be specific and unambiguous. Resolve all thinking before writing. These files must be executable by a cheaper model.
 - Create scripts in `~/dev/mystrap/dotfiles/shell/.local/bin/`, not `~/.local/bin/` (symlinks go in `~/.local/bin/`)
 
 ## Communication
