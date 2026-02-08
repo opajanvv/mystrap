@@ -6,3 +6,4 @@ typora
 1password-beta
 xscreensaver
 hyprpaper
+tmux
