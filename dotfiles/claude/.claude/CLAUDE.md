@@ -43,6 +43,11 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 - **Calendar**: `~/.local/bin/calendar-today` fetches Google Calendar events (see `llm-context/google-api.md`)
 - **Homelab**: `~/dev/homelab-docker` contains Docker Compose files
 
+## Server operations
+- For Proxmox `pct` commands and direct server operations, ask Jan to run manually
+- Source configs in `~/dev/homelab-docker/` must be synced to `/opt/homelab-docker/` on servers
+- Never assume local edits apply automatically to remote servers
+
 ## Git commits
 - Never run git commit directly. Always use the auto-committer agent via the Task tool.
 - Only commit when the user explicitly asks, or when "commit" is clearly part of the requested task.
