@@ -21,7 +21,7 @@ claude-glm() {
 
 # Ollama on laptop (local)
 claude-local() {
-    if ! curl -sf http://localhost:11434/v1/messages -o /dev/null 2>/dev/null; then
+    if ! curl -sf http://localhost:11434/ -o /dev/null 2>/dev/null; then
         echo "Error: Ollama not reachable at localhost:11434"
         echo "Start it with: ollama serve"
         return 1
