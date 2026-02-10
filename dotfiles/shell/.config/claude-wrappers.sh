@@ -29,7 +29,7 @@ claude-local() {
 
     env ANTHROPIC_BASE_URL="http://localhost:11434" \
         ANTHROPIC_AUTH_TOKEN="ollama" \
-        claude --model "${1:-qwen3-coder}" "${@:2}"
+        claude --model "${1:-llama3}" "${@:2}"
 }
 
 # Ollama on homelab server
