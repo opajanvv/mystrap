@@ -1,6 +1,7 @@
 # Global rules
 
 ## Working style
+- When writing health checks or connectivity tests, verify the HTTP method matches what the endpoint expects (POST-only endpoints return 405 on GET)
 - Trust Jan's expertise; ask rather than assume wrong
 - Work in small chunks; high-level structure first
 - Prefer minimal solutions; don't create plugins when a simple hook/script will do
@@ -46,8 +47,10 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 ## Server operations
 - Use the `remote-server` skill for running commands on the Proxmox server via SSH
 - Source configs in `~/dev/homelab-docker/` are deployed via git push + pull on server (bind-mounted into LXCs)
+- Git pull on the server requires SSH agent forwarding (`ssh -A jan@server`) -- there is no GitHub SSH key on the server
 - All LXCs are unprivileged -- bind-mounted files must be world-readable (`o+rX`)
 - Never assume local edits apply automatically to remote servers
+- Pi-hole (192.168.144.20) has no SSH access and no stored API credentials -- DNS records must be added manually via the web UI
 
 ## Git commits
 - Never run git commit directly. Always use the auto-committer agent via the Task tool.
