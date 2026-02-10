@@ -44,8 +44,9 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 - **Homelab**: `~/dev/homelab-docker` contains Docker Compose files
 
 ## Server operations
-- For Proxmox `pct` commands and direct server operations, ask Jan to run manually
-- Source configs in `~/dev/homelab-docker/` must be synced to `/opt/homelab-docker/` on servers
+- Use the `remote-server` skill for running commands on the Proxmox server via SSH
+- Source configs in `~/dev/homelab-docker/` are deployed via git push + pull on server (bind-mounted into LXCs)
+- All LXCs are unprivileged -- bind-mounted files must be world-readable (`o+rX`)
 - Never assume local edits apply automatically to remote servers
 
 ## Git commits
