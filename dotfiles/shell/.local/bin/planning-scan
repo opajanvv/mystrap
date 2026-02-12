@@ -56,13 +56,14 @@ def scan_inbox(vault_dir):
     if not inbox_dir.exists():
         return {"count": 0, "items": []}
 
-    for f in inbox_dir.glob("*.md"):
-        if f.name == "CLAUDE.md":
+    for f in inbox_dir.iterdir():
+        if not f.is_file() or f.name == "CLAUDE.md":
             continue
-        content = f.read_text()
-        fm = parse_frontmatter(content)
-        if fm.get("status") in ("done", "killed"):
-            continue
+        if f.suffix == ".md":
+            content = f.read_text()
+            fm = parse_frontmatter(content)
+            if fm.get("status") in ("done", "killed"):
+                continue
         items.append({
             "name": f.stem,
             "path": str(f.relative_to(vault_dir))
@@ -259,6 +260,66 @@ def scan_ideas(vault_dir):
     return result
 
 
+def scan_stale_tasks(vault_dir, today):
+    """Find active tasks older than 3 weeks with no due date and no project link."""
+    active_dir = vault_dir / "tasks" / "active"
+    stale_cutoff = today - timedelta(days=21)
+    stale = []
+
+    if not active_dir.exists():
+        return {"count": 0, "items": []}
+
+    for f in active_dir.glob("*.md"):
+        if f.name == "CLAUDE.md":
+            continue
+
+        content = f.read_text()
+        fm = parse_frontmatter(content)
+
+        if fm.get("status") in ("done", "killed"):
+            continue
+        if fm.get("due") or fm.get("project"):
+            continue
+
+        created = fm.get("created")
+        if not created:
+            continue
+
+        try:
+            if hasattr(created, "isoformat"):
+                created_date = created if hasattr(created, "year") else datetime.strptime(str(created), "%Y-%m-%d").date()
+            else:
+                created_date = datetime.strptime(str(created), "%Y-%m-%d").date()
+        except ValueError:
+            continue
+
+        # Use reviewed date if present (set when user says "keep" during triage)
+        reference_date = created_date
+        reviewed = fm.get("reviewed")
+        if reviewed:
+            try:
+                if hasattr(reviewed, "isoformat"):
+                    reviewed_date = reviewed if hasattr(reviewed, "year") else datetime.strptime(str(reviewed), "%Y-%m-%d").date()
+                else:
+                    reviewed_date = datetime.strptime(str(reviewed), "%Y-%m-%d").date()
+                if reviewed_date > reference_date:
+                    reference_date = reviewed_date
+            except ValueError:
+                pass
+
+        if reference_date <= stale_cutoff:
+            stale.append({
+                "name": f.stem,
+                "path": str(f.relative_to(vault_dir)),
+                "priority": fm.get("priority"),
+                "created": created_date.isoformat(),
+                "age_days": (today - created_date).days
+            })
+
+    stale.sort(key=lambda x: x["created"])
+    return {"count": len(stale), "items": stale}
+
+
 def main():
     vault_dir = get_vault_dir()
     today = datetime.now().date()
@@ -266,6 +327,7 @@ def main():
     result = {
         "inbox": scan_inbox(vault_dir),
         "active_tasks": scan_active_tasks(vault_dir, today),
+        "stale_tasks": scan_stale_tasks(vault_dir, today),
         "projects": scan_projects(vault_dir),
         "ideas": scan_ideas(vault_dir),
         "scan_date": today.isoformat()
