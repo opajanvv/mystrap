@@ -80,6 +80,7 @@ def scan_active_tasks(vault_dir, today):
         "count": 0,
         "overdue": [],
         "due_today": [],
+        "available": [],
         "due_soon": [],
         "no_due_date": []
     }
@@ -102,21 +103,37 @@ def scan_active_tasks(vault_dir, today):
         task = {
             "name": f.stem,
             "path": str(f.relative_to(vault_dir)),
+            "start": fm.get("start"),
             "due": fm.get("due"),
             "priority": fm.get("priority"),
             "project": fm.get("project")
         }
 
-        # Convert due date if it's a date object
-        if isinstance(task["due"], datetime):
-            task["due"] = task["due"].strftime("%Y-%m-%d")
-        elif hasattr(task["due"], "isoformat"):
-            task["due"] = task["due"].isoformat()
+        # Convert date fields if they're date objects
+        for field in ("start", "due"):
+            if isinstance(task[field], datetime):
+                task[field] = task[field].strftime("%Y-%m-%d")
+            elif hasattr(task[field], "isoformat"):
+                task[field] = task[field].isoformat()
+
+        # Parse start date
+        start_date = None
+        if task["start"]:
+            try:
+                start_date = datetime.strptime(str(task["start"]), "%Y-%m-%d").date()
+            except ValueError:
+                pass
 
         result["count"] += 1
 
         if not task["due"]:
-            result["no_due_date"].append(task)
+            # No due date: check if start date makes it available or not-yet-actionable
+            if start_date and start_date <= today:
+                result["available"].append(task)
+            elif start_date and start_date > today:
+                pass  # Future start, not actionable yet — excluded from no_due_date
+            else:
+                result["no_due_date"].append(task)
         else:
             try:
                 due_date = datetime.strptime(str(task["due"]), "%Y-%m-%d").date()
@@ -125,8 +142,12 @@ def scan_active_tasks(vault_dir, today):
                 elif due_date == today:
                     result["due_today"].append(task)
                 elif due_date <= soon_cutoff:
+                    # If start <= today and due is in "soon" range, keep in due_soon
                     result["due_soon"].append(task)
-                # Tasks with due dates beyond 7 days are tracked but not shown
+                elif start_date and start_date <= today:
+                    # Due date is beyond 7 days but start date has passed — available
+                    result["available"].append(task)
+                # Tasks with due dates beyond 7 days and no start are tracked but not shown
             except ValueError:
                 result["no_due_date"].append(task)
 

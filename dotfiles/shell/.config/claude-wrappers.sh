@@ -17,6 +17,7 @@ claude-glm() {
     env ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
         ANTHROPIC_API_KEY="$ZAI_KEY" \
         claude --model glm-4.7 "$@"
+        # claude --model glm-5 "$@"
 }
 
 # Ollama on laptop (local)

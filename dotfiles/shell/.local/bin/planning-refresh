@@ -80,6 +80,16 @@ today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg weekday "$WEEKDAY
   end
 ) + "\n\n" +
 
+# Available - start date has passed, not yet due soon
+(
+  .active_tasks.available // [] |
+  if length > 0 then
+    "## Available\n\n" +
+    (map("- [[" + .name + "]]" + (if .due then " (due " + (.due | strptime("%Y-%m-%d") | mktime | strftime("%a")) + ")" else "" end)) | join("\n")) + "\n\n"
+  else ""
+  end
+) +
+
 # This week - due_soon with day names
 (
   .active_tasks.due_soon // [] |
