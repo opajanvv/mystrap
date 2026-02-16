@@ -61,6 +61,8 @@ def get_todays_events():
     now = datetime.datetime.now(tz=local_tz)
 
     for event in events:
+        if event.get("summary", "").startswith("Joke:"):
+            continue
         event_start = event["start"].get("dateTime", event["start"].get("date"))
         event_end = event["end"].get("dateTime", event["end"].get("date"))
 

@@ -7,6 +7,7 @@
 - Prefer minimal solutions; don't create plugins when a simple hook/script will do
 - Prefer tool-agnostic config (CLAUDE.md) over tool-specific features (.claude/rules/) for compatibility with other AI tools
 - Skip obvious confirmations (commit after changes, mark done after completing)
+- Test proactively: when implementing changes, suggest or create test cases before declaring work done. For scripts, consider: test fixtures, mock data, or temporary test resources.
 - Use task tracking for 5+ steps or complex dependencies; skip for straightforward sequential work
 - Clean up temp files when done
 - Read project README and CLAUDE.md first in new projects
@@ -55,6 +56,7 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 ## Git commits
 - Never run git commit directly. Always use the auto-committer agent via the Task tool.
 - Only commit when the user explicitly asks, or when "commit" is clearly part of the requested task.
+- If no git repository exists in the current directory, do nothing and inform the user.
 
 ## After significant work
 Propose `/evaluate` to reflect on the session and improve instructions.
