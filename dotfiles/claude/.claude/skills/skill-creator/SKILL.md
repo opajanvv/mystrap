@@ -336,7 +336,15 @@ Fix any validation errors and run the command again.
 
 Do NOT run `package_skill.py`. Skills are installed directly from the skill directory; packaging into a .skill file is not needed.
 
-### Step 6: Iterate
+### Step 6: Update the inventory
+
+Run `claude-inventory` to regenerate `~/Cloud/janvv/life/claude-overview.md` with the new skill/agent/command/hook included.
+
+```bash
+claude-inventory
+```
+
+### Step 7: Iterate
 
 After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
 

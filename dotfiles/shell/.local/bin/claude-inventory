@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""claude-inventory: Regenerate ~/Cloud/janvv/life/claude-overview.md"""
+import re
+from datetime import date
+from pathlib import Path
+
+HOME = Path.home()
+OUTPUT = HOME / "Cloud/janvv/life/claude-overview.md"
+
+DIRS = [
+    (HOME / ".claude",                                              "~/.claude/"),
+    (HOME / "dev/mystrap/dotfiles/claude/.claude",                 "~/dev/mystrap/dotfiles/claude/.claude/"),
+    (HOME / "Cloud/janvv/life/.claude",                            "~/Cloud/janvv/life/.claude/"),
+    (HOME / "Cloud/janvv/life/planning/.claude",                   "~/Cloud/janvv/life/planning/.claude/"),
+    (HOME / "dev/janvv.nl/.claude",                                "~/dev/janvv.nl/.claude/"),
+    (HOME / "dev/penningmeester/.claude",                          "~/dev/penningmeester/.claude/"),
+]
+
+
+def parse_frontmatter(text):
+    m = re.match(r'^---\n(.*?)\n---\n', text, re.DOTALL)
+    if not m:
+        return {}, text
+    fm_raw = m.group(1)
+    body = text[m.end():]
+    fm = {}
+    for line in fm_raw.splitlines():
+        if ':' in line and not line.startswith(' '):
+            k, _, v = line.partition(':')
+            fm[k.strip()] = v.strip().strip('"').strip("'").strip('>')
+    return fm, body
+
+
+def first_line(text):
+    for line in text.splitlines():
+        line = line.strip()
+        if line and not line.startswith('#'):
+            return line
+    return ''
+
+
+def scan_dir(base):
+    sections = {}
+
+    # Skills
+    skills_dir = base / 'skills'
+    if skills_dir.exists():
+        items = []
+        for skill_dir in sorted(skills_dir.iterdir()):
+            skill_file = skill_dir / 'SKILL.md'
+            if skill_file.exists():
+                text = skill_file.read_text()
+                fm, body = parse_frontmatter(text)
+                name = fm.get('name', skill_dir.name)
+                desc = first_line(fm.get('description', '') + '\n' + body)
+                items.append((name, desc))
+        if items:
+            sections['Skills'] = items
+
+    # Agents
+    agents_dir = base / 'agents'
+    if agents_dir.exists():
+        items = []
+        for f in sorted(agents_dir.glob('*.md')):
+            text = f.read_text()
+            fm, body = parse_frontmatter(text)
+            name = fm.get('name', f.stem)
+            desc = first_line(fm.get('description', '') + '\n' + body)
+            items.append((name, desc))
+        if items:
+            sections['Agents'] = items
+
+    # Hooks
+    hooks_dir = base / 'hooks'
+    if hooks_dir.exists():
+        items = []
+        for f in sorted(hooks_dir.glob('*.sh')):
+            lines = f.read_text().splitlines()
+            name = f.stem
+            desc = ''
+            for line in lines[1:3]:
+                if line.startswith('#'):
+                    desc = line.lstrip('#').strip()
+                    break
+            items.append((name, desc))
+        if items:
+            sections['Hooks'] = items
+
+    # Commands
+    commands_dir = base / 'commands'
+    if commands_dir.exists():
+        items = []
+        for f in sorted(commands_dir.glob('*.md')):
+            text = f.read_text()
+            name = f.stem
+            # Use # heading if present
+            for line in text.splitlines():
+                if line.startswith('# '):
+                    name = line[2:].strip()
+                    break
+            desc = first_line(text)
+            items.append((f.stem, name, desc))
+        if items:
+            sections['Commands'] = items
+
+    return sections
+
+
+def render_table(section_name, items):
+    lines = ['| Name | Description |', '|------|-------------|']
+    for item in items:
+        if section_name == 'Commands':
+            # items are (stem, title, desc)
+            stem, title, desc = item
+            display = title if title != stem else stem
+            lines.append(f'| **{display}** | {desc} |')
+        else:
+            name, desc = item
+            lines.append(f'| **{name}** | {desc} |')
+    return '\n'.join(lines)
+
+
+output_lines = [
+    '# Claude Code Configuration Overview',
+    '',
+    f'*Generated: {date.today()}*',
+    '',
+    '---',
+]
+
+for base, label in DIRS:
+    if not base.exists():
+        continue
+    sections = scan_dir(base)
+    if not sections:
+        continue
+    output_lines += ['', f'## {label}', '']
+    for section_name, items in sections.items():
+        output_lines += [f'### {section_name}', '', render_table(section_name, items), '']
+
+OUTPUT.write_text('\n'.join(output_lines))
+print(f'Written: {OUTPUT}')
