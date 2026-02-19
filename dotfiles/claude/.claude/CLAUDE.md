@@ -41,7 +41,7 @@ Most work happens in `~/Cloud/janvv/life/` with separate workspaces:
 Each subdirectory has its own CLAUDE.md with specific instructions. Work in the appropriate folder.
 
 ## External integrations
-- **Mystrap**: `~/dev/mystrap` is the dotfiles repository. Uses stow, so scripts go in `dotfiles/shell/.local/bin/`.
+- **Mystrap**: `~/dev/mystrap` is the dotfiles repository. Uses stow, so scripts go in `dotfiles/shell/.local/bin/`. Skills live in `dotfiles/claude/.claude/skills/` and are tracked in this repo — commit skill changes via mystrap.
 - **Vault scripts**: `~/.local/bin/vault-*` scripts for scanning, cleanup, creating tasks, and TODAY.md generation
 - **Calendar**: `~/.local/bin/calendar-today` fetches Google Calendar events (see `llm-context/google-api.md`)
 - **Homelab**: `~/dev/homelab-docker` contains Docker Compose files
