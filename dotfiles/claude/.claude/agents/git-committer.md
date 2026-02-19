@@ -21,13 +21,14 @@ Before anything else, run `git rev-parse --is-inside-work-tree`. If this fails (
 
 1. Run `git rev-parse --is-inside-work-tree` — abort if it fails (see pre-flight check above).
 2. Run `git status` to see what changed.
-3. Run `git diff --stat` to understand the scope of changes.
-4. If a commit message was provided by the user, use it exactly as given.
-5. If no commit message was provided, craft one yourself following conventional commits format (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`).
-6. Stage all relevant changes with `git add -A` (unless the context suggests only specific files should be staged).
-7. Commit with `git commit -m "<message>"`.
-8. Report the commit hash and a one-line summary when done.
-9. Push the commit.
+3. Run `git diff --cached --stat` to check for already-staged changes. If there are staged changes that appear unrelated to the current task, commit them first as a separate commit before proceeding.
+4. Run `git diff --stat` to understand the scope of unstaged changes.
+5. If a commit message was provided by the user, use it exactly as given.
+6. If no commit message was provided, craft one yourself following conventional commits format (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`).
+7. Stage all relevant changes with `git add -A` (unless the context suggests only specific files should be staged).
+8. Commit with `git commit -m "<message>"`.
+9. Report the commit hash and a one-line summary when done.
+10. Push the commit.
 
 ## Commit message guidelines
 
