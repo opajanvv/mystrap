@@ -18,3 +18,14 @@ fi
 
 (crontab -l 2>/dev/null || true; echo "$CRON_ENTRY") | crontab -
 log "Installed cron job: $CRON_ENTRY"
+
+BG_COMMAND="$HOME/.local/bin/mystrap-bg-next"
+BG_ENTRY="0 0,12 * * * WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 $BG_COMMAND"
+
+if crontab -l 2>/dev/null | grep -qF "$BG_COMMAND"; then
+    log "Wallpaper cron job already exists"
+    exit 0
+fi
+
+(crontab -l 2>/dev/null || true; echo "$BG_ENTRY") | crontab -
+log "Installed cron job: $BG_ENTRY"
