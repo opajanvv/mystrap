@@ -50,7 +50,7 @@ if [ -d "$DOWNLOADS" ]; then
 
     # Remove empty directories left behind
     if [ "$DRY_RUN" = false ]; then
-        find "$DOWNLOADS" -type d -empty -delete 2>/dev/null || true
+        find "$DOWNLOADS" -mindepth 1 -type d -empty -delete 2>/dev/null || true
     fi
 fi
 
