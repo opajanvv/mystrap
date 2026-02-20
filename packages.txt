@@ -10,6 +10,7 @@ cmake
 meson
 cpio
 hyprland
+swaybg
 ttyd
 mousepad
 bind
