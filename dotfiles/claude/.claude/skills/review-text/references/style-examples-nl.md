@@ -74,6 +74,14 @@ Ik twijfel dus wel eens. Zijn wij, de minderheid in de bubbel, de kleine groep d
 
 ---
 
+## Krantenreactie: Trouw (opiniestuk, compact betoog)
+
+Fantastiese spelling
+
+Er zijn talen met een strikt fonetische spelling (Fins, Spaans), en die talen werken prima. Waarom dan verschil maken tussen 'leider' en 'lijder'? Er zijn genoeg gelijkklinkende woorden die we niet door spelling onderscheiden. Als iemand zegt 'wij zagen bomen', dan zal doorgaans uit de context de betekenis duidelijk zijn. De tijt die we nu in het onderwijs aan de dt-kwestie besteden, kan dan voor belangrijker zaken gebruikt worden, ja tog?
+
+---
+
 ## LinkedIn post: a.s.r. (formaat-satire)
 
 Beste relatiebeheerder van a.s.r.,
