@@ -97,6 +97,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/log-skill-usage.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

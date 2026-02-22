@@ -1,0 +1,20 @@
+#!/bin/bash
+# Show Claude skill usage statistics
+
+LOG="$HOME/.local/share/claude/skill-usage.log"
+
+if [ ! -f "$LOG" ]; then
+    echo "No skill usage data yet: $LOG"
+    exit 0
+fi
+
+echo "Skill usage (all time):"
+echo "---"
+cut -d',' -f2 "$LOG" | sort | uniq -c | sort -rn | awk '{printf "  %-30s %d\n", $2, $1}'
+
+echo ""
+echo "Last 30 days:"
+echo "---"
+since=$(date -d "-30 days" +%Y-%m-%d)
+awk -F',' -v since="$since" '$1 >= since {print $2}' "$LOG" \
+  | sort | uniq -c | sort -rn | awk '{printf "  %-30s %d\n", $2, $1}'
