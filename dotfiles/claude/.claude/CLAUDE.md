@@ -54,6 +54,11 @@ Each subdirectory has its own CLAUDE.md with specific instructions. Work in the 
 - Never assume local edits apply automatically to remote servers
 - Pi-hole (192.168.144.20) has no SSH access and no stored API credentials -- DNS records must be added manually via the web UI
 
+## rclone operations
+- `rclone move`/`rclone sync` fails on overlapping remotes (e.g. subdirectory → parent). Use `rclone copy --files-from` instead when source and destination share a common ancestor.
+- Before running `rclone purge` or `rclone delete`, verify the destination file count matches expectations. Only purge after confirming the move/copy succeeded.
+- Don't pipe rclone output inline (e.g. `rclone lsf ... | grep ...`). Write to a file first, then process separately — shell pipes mangle rclone's argument parsing.
+
 ## Git commits
 - Never run git commit directly. Always use the auto-committer agent via the Task tool.
 - Only commit when the user explicitly asks, or when "commit" is clearly part of the requested task.
