@@ -310,9 +310,9 @@ def scan_ideas(vault_dir):
 
     result["someday_count"] = len(someday_ideas)
 
-    # Top 3 ideas sorted by reviewed date (never reviewed first, then oldest reviewed)
+    # All ideas sorted by reviewed date (never reviewed first, then oldest reviewed)
     someday_ideas.sort(key=lambda x: (x["reviewed"] is not None, x["reviewed"] or ""))
-    result["review_queue"] = someday_ideas[:3]
+    result["review_queue"] = someday_ideas
 
     # Sort unreviewed by category (uncategorized last), then by created date (oldest first)
     unreviewed_ideas.sort(key=lambda x: (x["category"] or "zzz", x["created"] or ""))
