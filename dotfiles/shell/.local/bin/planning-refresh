@@ -124,15 +124,6 @@ today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg weekday "$WEEKDAY
     (map("- [[" + .name + "]] (" + (.unchecked_count | tostring) + " steps)") | join("\n")) + "\n\n"
   else ""
   end
-) +
-
-# Consider
-(
-  if .ideas.random_someday then
-    "## Consider\n\n[[" + .ideas.random_someday.name + "]]" +
-    (if .ideas.random_someday.category then " (" + .ideas.random_someday.category + ")" else "" end) + "\n"
-  else ""
-  end
 )
 ')
 

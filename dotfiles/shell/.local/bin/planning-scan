@@ -10,7 +10,6 @@ Claude Code commands like /refresh-planning and /process-inbox.
 
 import json
 import os
-import random
 import re
 import sys
 from datetime import datetime, timedelta
@@ -251,7 +250,7 @@ def scan_ideas(vault_dir):
 
     result = {
         "someday_count": 0,
-        "random_someday": None,
+        "review_queue": [],
         "unreviewed": {
             "total": 0,
             "reviewed": 0,
@@ -288,7 +287,8 @@ def scan_ideas(vault_dir):
                 "name": f.stem,
                 "path": str(f.relative_to(vault_dir)),
                 "category": category,
-                "created": str(created) if created else None
+                "created": str(created) if created else None,
+                "reviewed": str(reviewed) if reviewed else None
             }
 
             someday_ideas.append(idea)
@@ -310,8 +310,9 @@ def scan_ideas(vault_dir):
 
     result["someday_count"] = len(someday_ideas)
 
-    if someday_ideas:
-        result["random_someday"] = random.choice(someday_ideas)
+    # Top 3 ideas sorted by reviewed date (never reviewed first, then oldest reviewed)
+    someday_ideas.sort(key=lambda x: (x["reviewed"] is not None, x["reviewed"] or ""))
+    result["review_queue"] = someday_ideas[:3]
 
     # Sort unreviewed by category (uncategorized last), then by created date (oldest first)
     unreviewed_ideas.sort(key=lambda x: (x["category"] or "zzz", x["created"] or ""))
