@@ -33,6 +33,7 @@ tasks=$(tasks-today 2>/dev/null || echo "")
 echo "Generating TODAY.md..."
 today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg weekday "$WEEKDAY" --arg calendar "$calendar" --arg tasks "$tasks" '
 (.projects.target.name // "") as $target_name |
+.projects.wip_warning as $wip_warning |
 
 # Header with weekday
 "# Today - " + $weekday + " " + $date + "\n\n" +
@@ -55,7 +56,8 @@ today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg weekday "$WEEKDAY
   (
     (.active_tasks.overdue // [] | map("- OVERDUE: [[" + .name + "]] (was due: " + .due + ")")) +
     (.active_tasks.due_today // [] | map("- [[" + .name + "]] (due: today)")) +
-    ([.active_tasks.no_due_date // [] | .[] | select((.project == null or .project == "") and .priority == "high")] | map("- [[" + .name + "]] (high)"))
+    ([.active_tasks.no_due_date // [] | .[] | select((.project == null or .project == "") and .priority == "high")] | map("- [[" + .name + "]] (high)")) +
+    (.projects.stagnant // [] | map("- STALLED: [[" + .name + "]] (no progress in 3+ weeks)"))
   ) |
   if length == 0 then "_Nothing urgent._"
   else join("\n")
@@ -116,6 +118,9 @@ today_md=$(echo "$vault_json" | jq -r --arg date "$DATE" --arg weekday "$WEEKDAY
   [.projects.active // [] | .[] | select(.name != $target_name)] |
   if length > 0 then
     "## Active projects\n\n" +
+    (if ($wip_warning.exceeded // false) then
+      "! WIP limit: " + ($wip_warning.active_count | tostring) + "/" + ($wip_warning.limit | tostring) + " active. Pause or finish one before starting new work.\n\n"
+    else "" end) +
     (map("- [[" + .name + "]] (" + (.unchecked_count | tostring) + " steps)") | join("\n")) + "\n\n"
   else ""
   end

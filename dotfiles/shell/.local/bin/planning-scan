@@ -48,6 +48,34 @@ def get_unchecked_items(content):
     return items
 
 
+def is_stagnant(fm, unchecked_count, today, threshold_days=21):
+    if unchecked_count == 0:
+        return False
+    cutoff = today - timedelta(days=threshold_days)
+    last_progress = fm.get("last_progress")
+    if last_progress:
+        try:
+            if hasattr(last_progress, "isoformat"):
+                lp_date = last_progress if hasattr(last_progress, "year") else last_progress
+            else:
+                lp_date = datetime.strptime(str(last_progress), "%Y-%m-%d").date()
+            return lp_date <= cutoff
+        except (ValueError, TypeError):
+            pass
+    # Fall back to created date
+    created = fm.get("created")
+    if created:
+        try:
+            if hasattr(created, "isoformat"):
+                created_date = created if hasattr(created, "year") else created
+            else:
+                created_date = datetime.strptime(str(created), "%Y-%m-%d").date()
+            return created_date <= cutoff
+        except (ValueError, TypeError):
+            pass
+    return False
+
+
 def scan_inbox(vault_dir):
     """Scan tasks/inbox/ for items."""
     inbox_dir = vault_dir / "tasks" / "inbox"
@@ -154,7 +182,7 @@ def scan_active_tasks(vault_dir, today):
     return result
 
 
-def scan_projects(vault_dir):
+def scan_projects(vault_dir, today):
     """Scan projects/ for status and progress."""
     projects_dir = vault_dir / "projects"
 
@@ -182,7 +210,9 @@ def scan_projects(vault_dir):
         project = {
             "name": f.stem,
             "path": str(f.relative_to(vault_dir)),
-            "unchecked_count": len(unchecked)
+            "unchecked_count": len(unchecked),
+            "last_progress": str(fm.get("last_progress")) if fm.get("last_progress") else None,
+            "stagnant": is_stagnant(fm, len(unchecked), today)
         }
 
         status = fm.get("status", "active")
@@ -197,6 +227,18 @@ def scan_projects(vault_dir):
             result["active"].append(project)
         elif status == "paused":
             result["paused"].append(project)
+
+    active_count = len(result["active"]) + (1 if result["target"] else 0)
+    wip_limit = 3
+    result["wip_warning"] = {
+        "limit": wip_limit,
+        "active_count": active_count,
+        "exceeded": active_count > wip_limit
+    }
+    result["stagnant"] = (
+        ([result["target"]] if result["target"] and result["target"].get("stagnant") else []) +
+        [p for p in result["active"] if p.get("stagnant")]
+    )
 
     return result
 
@@ -349,7 +391,7 @@ def main():
         "inbox": scan_inbox(vault_dir),
         "active_tasks": scan_active_tasks(vault_dir, today),
         "stale_tasks": scan_stale_tasks(vault_dir, today),
-        "projects": scan_projects(vault_dir),
+        "projects": scan_projects(vault_dir, today),
         "ideas": scan_ideas(vault_dir),
         "scan_date": today.isoformat()
     }
